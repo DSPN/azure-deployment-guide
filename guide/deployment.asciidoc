@@ -1,7 +1,7 @@
 == Initial Steps
 
 //TODO
-* Get a MS Lice ID
+* Get a MS Live ID
 * Log into Azure Control panel
 * etc
 
