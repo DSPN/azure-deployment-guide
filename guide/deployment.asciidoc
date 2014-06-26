@@ -20,5 +20,5 @@
 
 Once the nodes have been started up, they need to be configured to be ready for OpsCenter to deploy DSE. The first step in this process will be to set up the default user (in this case "datastax") so that it can invoke _sudo_ without a password, which will make other configuration steps significantly easier. This script provides an example of one way to accomplish that.
 
-include::../scripts/setup_sudoers.sh
+include::../scripts/setup_sudoers.sh[]
 
