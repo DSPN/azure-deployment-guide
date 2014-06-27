@@ -15,7 +15,14 @@
 # In this example the group "datastax" is given NOPASSWD sudo.
 # The "datastax" group was created at instance creation time.
 
-for nodeport in {10001..10050}
+APPDOMAIN=datastax-test.cloudapp.net
+USERID=datastax
+KEYFILE=~/.azurekeys/datastax-test.key
+JAVA_RPM=~/Downloads/jre-7u60-linux-x64.rpm
+START_PORT=10001
+END_PORT=10050
+
+for nodeport in {${START_PORT}..${END_PORT}};
 do
-	ssh -t -i ~/.azurekeys/datastax-test.key datastax@datastax-test.cloudapp.net -p ${nodeport} 'echo -e "%datastax\tALL = (ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers'
+	ssh -t -i ${KEYFILE} ${USERID}@${APPDOMAIN} -p ${nodeport} 'echo -e "%datastax\tALL = (ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers'
 done
