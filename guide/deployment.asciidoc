@@ -32,9 +32,10 @@ Configure provisioning script link:../scripts/provision.ps1[] and set followings
 ** Number of Cassandra Cloud Services
 ** Number of Cassandra nodes per Cloud Service (max 50)
 ** Total number of load generating nodes (max 50)
-** Path to SSH certificate
+** Path and fingerprint of SSH certificate
+** Default linux username and password
 
-Script above can provision up to 254 instances, where each instance has following properties (x=instance number between 1..254):
+Script above can provision up to 254 instances (CS x nodes per CS), where each instance has following properties (x=instance number between 1..254):
 
 |===
 |Hostname|datastax-perftest-x
