@@ -14,7 +14,15 @@ $stressClientNodes = 15
 $instanceImage = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606"
 ## Instance Size
 $instanceSize = "A7"
- 
+## Path to certificate which will be used as SSH key.
+## If you don't have .cer key, follow instructions here: http://azure.microsoft.com/en-us/documentation/articles/linux-use-ssh-key/
+$certPath = "C:\Users\rustam\Desktop\certs\datastax-test.cer"
+## Certificate Fingerprint (Fingerprint can be obtained form portal > cloud service > certificates)
+$certFP = 6316F4E5AA083390E615B13C85CAF1F11D47D4F6
+## Default username and password
+$linuxUser = "datastax"
+$linuxPass = "Cazzandra123"
+
 ###### END OF CONFIG ######
  
 ## Add Storage Accounts.
@@ -30,12 +38,11 @@ for($cs=1; $cs -le $totalCloudService; $i++)
     $csName = "datastax-perftest$cs"
     New-AzureService -ServiceName $csName -AffinityGroup $affinityGroup
  
-    ## Add Certificate to the store on the cloud service (.cer or .pfx with -Password)
-    ## If you don't have .cer key, follow instructions here: http://azure.microsoft.com/en-us/documentation/articles/linux-use-ssh-key/
-    Add-AzureCertificate -CertToDeploy 'C:\Users\rustam\Desktop\certs\datastax-test.cer' -ServiceName "$csName"
+## Add Certificate to the store on the cloud service (.cer or .pfx with -Password)
+    Add-AzureCertificate -CertToDeploy $certPath -ServiceName "$csName"
  
-    ## Create a certificate in the users home directory. Fingerprint can be obtained form portal > cloud service > certificates
-    $sshkey = New-AzureSSHKey -PublicKey -Fingerprint 6316F4E5AA083390E615B13C85CAF1F11D47D4F6 -Path '/home/datastax/.ssh/authorized_keys'
+    ## Create a certificate in the users home directory.
+    $sshkey = New-AzureSSHKey -PublicKey -Fingerprint $certFP -Path '/home/datastax/.ssh/authorized_keys'
  
     for($i=1; $i -le $vmPerCloudService; $i++)
     {
@@ -48,7 +55,7 @@ for($cs=1; $cs -le $totalCloudService; $i++)
  
         ## Create new VM
         New-AzureVMConfig -Name "$csName-$instanceNumber" -ImageName $instanceImage -InstanceSize $instanceSize | `
-            Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -SSHPublicKeys $sshKey -NoSSHEndpoint | `
+            Add-AzureProvisioningConfig -Linux -LinuxUser $linuxUser -Password $linuxPass -SSHPublicKeys $sshKey -NoSSHEndpoint | `
             Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
             Set-AzureSubnet -SubnetNames "Subnet-1" | Set-AzureStaticVNetIP -IPAddress "10.1.1.$instanceNumber" | `
             Add-AzureDataDisk -CreateNew -DiskSizeInGB 64 -LUN 0 -DiskLabel "disk1" -MediaLocation "$storageContainer/disk1.vhd" | `
@@ -74,8 +81,8 @@ for($cs=1; $cs -le $totalCloudService; $i++)
 ## Add Stress Client CloudService
 $stressClientCSName = "datastax-stresser"
 New-AzureService -ServiceName $stressClientCSName -AffinityGroup $affinityGroup
-Add-AzureCertificate -CertToDeploy 'C:\Users\rustam\Desktop\certs\datastax-test.cer' -ServiceName $stressClientCSName
-$sshkey = New-AzureSSHKey -PublicKey -Fingerprint 6316F4E5AA083390E615B13C85CAF1F11D47D4F6 -Path '/home/datastax/.ssh/authorized_keys'
+Add-AzureCertificate -CertToDeploy $certPath -ServiceName $stressClientCSName
+$sshkey = New-AzureSSHKey -PublicKey -Fingerprint $certFP -Path '/home/datastax/.ssh/authorized_keys'
  
 ## Add Stress Client VMs
 for($i=1; $i -le $stressClientNodes; $i++)
@@ -83,7 +90,7 @@ for($i=1; $i -le $stressClientNodes; $i++)
     $sshPort = 10000 + $i
  
     New-AzureVMConfig -Name "$stressClientCSName-$i" -ImageName $instanceImage -InstanceSize $instanceSize | `
-        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -SSHPublicKeys $sshKey -NoSSHEndpoint | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser $linuxUser -Password $linuxPass -SSHPublicKeys $sshKey -NoSSHEndpoint | `
         Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
         Set-AzureSubnet -SubnetNames "Subnet-1" | Set-AzureStaticVNetIP -IPAddress "10.1.20.$i" | `
         New-AzureVM -ServiceName $stressClientCSName -VNetName $vnetName
