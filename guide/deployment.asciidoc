@@ -11,7 +11,7 @@
 * Fault Domains
 * Datacenters
 
-== Starting Instances
+== Provisioning Instances
 
 --
 *Prerequisites:* Windows machine with Azure PowerShell cmdlets and Azure account credentials. Refer to http://blogs.technet.com/b/askpfeplat/archive/2013/04/14/building-a-vm-in-windows-azure-using-powershell-in-a-few-quick-steps.aspx[this blog] to configure PowerShell.
@@ -56,3 +56,9 @@ Once the nodes have been started up, they need to be configured to be ready for 
 
 include::../scripts/setup_sudoers.sh[]
 
+== Deprovisioning Instances
+
+Delete all virtual machines and attached disks in the given Cloud Service, but not the cloud service itself (replace service name):
+
+  Remove-AzureDeployment -ServiceName "datastax-perftest" -Slot Production -DeleteVHD
+  Remove-AzureDeployment -ServiceName "datastax-stresser" -Slot Production -DeleteVHD
