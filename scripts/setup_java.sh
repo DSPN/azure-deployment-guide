@@ -20,6 +20,7 @@ do
 	ssh -t -i ${KEYFILE} ${USERID}@${APPDOMAIN} -p ${nodeport} "sudo mkdir -p /usr/share/dse/cassandra/lib"
 	ssh -t -i ${KEYFILE} ${USERID}@${APPDOMAIN} -p ${nodeport} "sudo cp $(basename $JNA) /usr/share/dse/cassandra/lib/jna.jar"
 	ssh -i ${KEYFILE} ${USERID}@${APPDOMAIN} -p ${nodeport} 'java -version'
+	ssh -t -i ${KEYFILE} ${USERID}@${APPDOMAIN} -p ${nodeport} "sudo alternatives --install /usr/bin/java java /usr/java/jre1.7.0_60/bin/java 2000"
 
 
 done
