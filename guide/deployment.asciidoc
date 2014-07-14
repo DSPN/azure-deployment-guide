@@ -62,3 +62,7 @@ Delete all virtual machines and attached disks in the given Cloud Service, but n
 
   Remove-AzureDeployment -ServiceName "datastax-perftest" -Slot Production -DeleteVHD
   Remove-AzureDeployment -ServiceName "datastax-stresser" -Slot Production -DeleteVHD
+
+Finally, clean up disks that are no longer attached to virtual machines (be careful of this one – ensure you know what you are deleting before executing):
+
+  Get-AzureDisk | where { $_.AttachedTo -eq $null } | Remove-AzureDisk -DeleteVHD
