@@ -66,3 +66,7 @@ Delete all virtual machines and attached disks in the given Cloud Service, but n
 Finally, clean up disks that are no longer attached to virtual machines (be careful of this one – ensure you know what you are deleting before executing):
 
   Get-AzureDisk | where { $_.AttachedTo -eq $null } | Remove-AzureDisk -DeleteVHD
+
+or (sometimes command above may not work, then delete by cloud service):
+
+  Get-AzureDisk | where { $_.AttachedTo.HostedServiceName -eq "datastax-perftest" } | Remove-AzureDisk -DeleteVHD
