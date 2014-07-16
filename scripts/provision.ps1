@@ -33,7 +33,7 @@ for($i=1; $i -le ($vmPerCloudService * $totalCloudService / 2); $i++)
 }
  
 ## Add Cassandra CloudService and VMs
-for($cs=1; $cs -le $totalCloudService; $i++)
+for($cs=1; $cs -le $totalCloudService; $cs++)
 {
     $csName = "datastax-perftest$cs"
     New-AzureService -ServiceName $csName -AffinityGroup $affinityGroup
