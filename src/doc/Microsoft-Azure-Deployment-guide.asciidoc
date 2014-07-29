@@ -1,0 +1,25 @@
+== Getting Started with DataStax Enterprise in the Microsoft Azure Cloud
+
+:doctype: book
+:sourcedir: ./src/doc
+//Pages that pull in images do so from an unusual parent dir
+:imagesdir: ../../images
+
+include::{sourcedir}/sections/overview.asciidoc[]
+//Include submodule?
+include::{sourcedir}/common/about-datastax.asciidoc[]
+include::{sourcedir}/sections/about-azure.asciidoc[]
+
+//Get nodes up and running
+include::{sourcedir}/sections/deploy-a-cluster.asciidoc[]
+//include::{sourcedir}/sections/customize-blueprint.asciidoc[]
+include::{sourcedir}/sections/prep-for-opscenter.asciidoc[]
+
+//Deploy Cluster w/OpsCenter
+include::{sourcedir}/common/opscenter-deploy.asciidoc[]
+
+//Grow the cluster
+include::{sourcedir}/sections/adding-nodes.asciidoc[]
+
+//Last words...
+include::{sourcedir}/sections/conclusion.asciidoc[]
