@@ -18,7 +18,7 @@ $instanceSize = "A7"
 ## If you don't have .cer key, follow instructions here: http://azure.microsoft.com/en-us/documentation/articles/linux-use-ssh-key/
 $certPath = "C:\Users\rustam\Desktop\certs\datastax-test.cer"
 ## Certificate Fingerprint (Fingerprint can be obtained form portal > cloud service > certificates)
-$certFP = 6316F4E5AA083390E615B13C85CAF1F11D47D4F6
+$certFP = "6316F4E5AA083390E615B13C85CAF1F11D47D4F6"
 ## Default username and password
 $linuxUser = "datastax"
 $linuxPass = "Cazzandra123"
@@ -33,7 +33,7 @@ for($i=1; $i -le ($vmPerCloudService * $totalCloudService / 2); $i++)
 }
  
 ## Add Cassandra CloudService and VMs
-for($cs=1; $cs -le $totalCloudService; $i++)
+for($cs=1; $cs -le $totalCloudService; $cs++)
 {
     $csName = "datastax-perftest$cs"
     New-AzureService -ServiceName $csName -AffinityGroup $affinityGroup
