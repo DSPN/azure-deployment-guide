@@ -1,4 +1,4 @@
-== Getting Started with DataStax Enterprise in the Microsoft Azure Cloud
+== DataStax Enterprise Deployment Guide for Microsoft Azure Cloud
 
 :doctype: book
 :sourcedir: ./src/doc
@@ -12,14 +12,14 @@ include::{sourcedir}/sections/about-azure.asciidoc[]
 
 //Get nodes up and running
 include::{sourcedir}/sections/deploy-a-cluster.asciidoc[]
-//include::{sourcedir}/sections/customize-blueprint.asciidoc[]
 include::{sourcedir}/sections/prep-for-opscenter.asciidoc[]
 
 //Deploy Cluster w/OpsCenter
 include::{sourcedir}/common/opscenter-deploy.asciidoc[]
 
+include::{sourcedir}/sections/dse-azure-deployment-considerations.asciidoc[]
 //Grow the cluster
-include::{sourcedir}/sections/adding-nodes.asciidoc[]
+//include::{sourcedir}/sections/adding-nodes.asciidoc[]
 
 //Last words...
 include::{sourcedir}/sections/conclusion.asciidoc[]

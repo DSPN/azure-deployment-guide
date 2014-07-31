@@ -1,0 +1,59 @@
+
+//:source-highlighter: pygments
+//:pygments-linenums-mode: inline
+
+=== Deploy A Cluster
+
+.Prerequisites
+
+. Obtain an MS Live ID
+A *Microsoft Live ID* is required to sign in to Azure. A Live ID is an account with an email address and password associated with it that allows users to sign in to a variety of Microsoft web properties, including Azure. Live IDs can be obtained by filling out https://signup.live.com[this form].
+
+. Sign in to Azure
+Using an MS Live ID, http://azure.microsoft.com/en-us/account/[sign in to the Azure control panel] and configure the basic details required to run Azure, such as billing and contact information. Alternatively, new users can http://azure.microsoft.com/en-us/pricing/free-trial/[sign up for a free trial] period that includes a $200 credit.
+
+. Set up a PowerShell Environment
+Configuring nodes for DSE requires the Azure PowerShell cmdlets and Azure account credentials to be configured in a PowerShell environment. This can either be run on a local workstation, or via an Azure VM. These links provide instructions for setting up the PowerShell environment:
+
+* http://azure.microsoft.com/en-us/documentation/articles/install-configure-powershell/[Install Powershell for Azure]
+
+
+* http://blogs.technet.com/b/askpfeplat/archive/2013/04/14/building-a-vm-in-windows-azure-using-powershell-in-a-few-quick-steps.aspx[Configuring Azure cmdlets in PowerShell]
+
+
+.Provision Nodes
+
+With prerequisites out of the way, it is time to set up the Azure environment. The following steps make heavy use of example scripts. These scripts should be modified to meet individual deployment requirements. Users are of course welcome to make parameterized versions of these scripts and the DSPN will happily accept pull-requests for improvements.
+
+.Configure the Affinity Group
+[source,powershell]
+----
+#Create Affinity Group:
+New-AzureAffinityGroup -Name "TestGroup" -Label "DataStax" -Location "East US"
+----
+
+//TODO Come back and see if screenshot can be added here
+[NOTE]
+====
+This next step can be performed via the Azure Control-Panel under the *Networks* menu. Click the *New* button to get started. The instructions here show how to do this step using the http://azure.microsoft.com/en-us/documentation/articles/xplat-cli/[Azure Cross-Platform CLI] so that the entirety of these instructions can be completed within a scripting framework.
+====
+
+.Configure the VNET
+[source,bash]
+----
+#This step requires the Azure cross-platform cli, see:
+#http://azure.microsoft.com/en-us/documentation/articles/xplat-cli/
+
+#Create VNET in order to use static IPs
+azure network vnet create --affinity-group "TestGroup" --address-space 10.1.0.0 --cidr 16 test-vnet
+----
+
+This next step is the bulk of the work that needs to be performed. This PowerShell script will actually do the work of starting up Azure instances. The top of the script contains a configuration section that should be customized to meet individual requirements. The individual items that need to be configured are explained after the code listing.
+
+.Provision with PowerShell
+[source,powershell,linenums]
+----
+include::../../../src/scripts/provision.ps1[]
+----
+
+*TODO* Finish pre-configuration steps, identify ops-center node

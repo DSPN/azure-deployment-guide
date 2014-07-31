@@ -1,0 +1,7 @@
+
+=== About Microsoft Azure
+
+Azure is an open and flexible cloud platform that enables you to quickly build, deploy and manage applications across a global network of Microsoft-managed datacenters. You can build applications using any language, tool or framework. And you can integrate your public cloud applications with your existing IT environment.
+
+For more information, visit: https://azure.microsoft.com/en-us/overview/what-is-azure/
+//From: https://azure.microsoft.com/en-us/overview/what-is-azure/
