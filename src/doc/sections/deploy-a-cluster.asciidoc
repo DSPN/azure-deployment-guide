@@ -35,7 +35,7 @@ New-AzureAffinityGroup -Name "TestGroup" -Label "DataStax" -Location "East US"
 //TODO Come back and see if screenshot can be added here
 [NOTE]
 ====
-This next step can be performed via the Azure Control-Panel under the *Networks* menu. Click the *New* button to get started. The instructions here show how to do this step using the http://azure.microsoft.com/en-us/documentation/articles/xplat-cli/[Azure Cross-Platform CLI] so that the entirety of these instructions can be completed within a scripting framework.
+This next step can be performed via the Azure Portal under the *Networks* menu. Click the *New* button to get started. The instructions here show how to do this step using the http://azure.microsoft.com/en-us/documentation/articles/xplat-cli/[Azure Cross-Platform CLI] so that the entirety of these instructions can be completed within a scripting framework.
 ====
 
 .Configure the VNET

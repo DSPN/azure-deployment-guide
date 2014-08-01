@@ -1,4 +1,17 @@
 
 === Configuring Multi-Region Data Centers in Azure
 
-*TODO* Migrate content from Confluence
+There are two ways to configure multi-region DSE/Cassandra cluster in Azure:
+
+1. Instance Level Public IP (PIP)
+1. VNet-to-VNet
+
+http://msdn.microsoft.com/en-us/library/azure/dn690118.aspx[Instance-Level Public IP Addresses] can be assigned to each Cassandra cluster node effectively allowing all Cassandra nodes to speak to each other over public internet. Drawbacks in comparison to VNet-to-VNet setup are:
+
+ * Need to enable node and Cassandra security (encryption and authentication). Unlike VNet-to-VNet setup, nodes and ports are publically accessible.
+ * ...
+
+http://msdn.microsoft.com/en-us/library/azure/dn690122.aspx[VNet-to-VNet] is VPN between two Azure VNets which could be on any Azure region or between Azure VNet and customer premises. It has a number of drawbacks in comparison to PIP:
+
+ * VPN gateways are becoming point of failure and with large deployment potentially bottleneck.
+ * Need to maintain N*(N-1)/2 VPN connections with N*(N-1) VPN gateways, where N is number of vnets. As number of vnets grow, it may become a problem.

@@ -1,0 +1,192 @@
+=== Azure Multi-region Setup using Instance Level Public IPs
+
+:toc:
+
+Following tutorial shows how to setup multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using Public IPs (PIP).
+
+==== Setup Network
+
+Public IP requires Regional (wide) VNet (which is different from Affinity Group VNet). By default Azure Portal will create Regional VNet.
+
+In Azure portal create two regional VNets (New > Virtual Network > Custom Create) with following settings, leaving all others empty:
+
+|===
+|VNet Name |Region | IP address space
+
+|cassandra-rvnet-neu
+|North Europe
+|10.2.1.0/24
+
+|cassandra-rvnet-weu
+|West Europe
+|10.2.2.0/24
+|===
+
+==== Setup Instances
+
+In each DC (Region) create a new CloudService and storage accounts.
+
+[source,powershell]
+----
+New-AzureService -ServiceName "cassandra-neu" -Location "North Europe"
+New-AzureService -ServiceName "cassandra-weu" -Location "West Europe"
+ 
+New-AzureStorageAccount -StorageAccountName "cassandraneu" -Label "DataStax" -Location "North Europe"
+New-AzureStorageAccount -StorageAccountName "cassandraweu" -Label "DataStax" -Location "West Europe"
+----
+
+Provision 3 VM instances with internal static IP (Set-AzureStaticVNetIP command) and public IP (Set-AzurePublicIP command) in each DC.
+
+[source,powershell]
+----
+# Get subscription name
+$subscription = Get-AzureSubscription | select -expand CurrentStorageAccountName
+ 
+# Set default storage account to North EU
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cassandraneu"
+ 
+# Create instances in North EU region
+for($i=0; $i -le 2; $i++)
+{
+    $sshPort = 10000 + $i
+    $staticIP = 10+$i
+  
+    New-AzureVMConfig -Name "cassandra-neu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cassandra123" -NoSSHEndpoint | `
+        Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
+        Set-AzureSubnet -SubnetNames "Subnet-1" | `
+        Set-AzureStaticVNetIP -IPAddress "10.2.1.$staticIP" | `
+        Set-AzurePublicIP -PublicIPName Cassandra | `
+        New-AzureVM -ServiceName "cassandra-neu" -VNetName "cassandra-rvnet-neu"
+}
+ 
+# Set default storage account to West EU
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cassandraweu"
+ 
+# Create instances in West EU region
+for($i=0; $i -le 2; $i++)
+{
+    $sshPort = 10000 + $i
+    $staticIP = 10+$i
+ 
+    New-AzureVMConfig -Name "cassandra-weu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cassandra123" -NoSSHEndpoint | `
+        Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
+        Set-AzureSubnet -SubnetNames "Subnet-1" |
+        Set-AzureStaticVNetIP -IPAddress "10.2.2.$staticIP" | `
+        Set-AzurePublicIP -PublicIPName Cassandra | `
+        New-AzureVM -ServiceName "cassandra-weu" -VNetName "cassandra-rvnet-weu"
+}
+----
+
+If you already have instances running, you can assign PublicIP for all VMs in the cloud service or individually using following commands:
+
+[source,powershell]
+----
+# all instances in CS
+Get-AzureVM -ServiceName cassandra-weu | Set-AzurePublicIP -PublicIPName Cassandra | Update-AzureVM
+# single instance
+Get-AzureVM -ServiceName cassandra-weu -Name cassandra-weu2 | Set-AzurePublicIP -PublicIPName Cassandra | Update-AzureVM
+----
+
+Get list of PIPs for each VM instance:
+
+[source,powershell]
+----
+Get-AzureVM -ServiceName cassandra-weu
+
+# ...
+# PublicIPAddress             : 23.100.2.11
+# ...
+# PublicIPAddress             : 23.100.2.12
+# ...
+----
+
+All ports are accessible on public IPs without mapping.
+
+==== Setup Cassandra
+
+Install Cassandra on all nodes following RHEL setup guide or using OpsCenter.
+
+In order to communicate in Azure multi-region environment using PIPs, Cassandra needs to know both - local and public IPs (broadcast).
+
+In `cassandra.yaml` set followings:
+
+[source,yaml]
+----
+listen_address: <local static IP of the node>
+broadcast_address: <assigned PIP address of this node>
+rpc_address: 0.0.0.0
+seeds: <weu0 PIP, neu0 PIP>
+endpoint_snitch: GossipingPropertyFileSnitch
+data_directories: /mnt/resource/cassandra/data
+commitlog_directory: /mnt/resource/cassandra/commitlog
+saved_caches_directory: /mnt/resource/cassandra/saved_caches
+----
+
+Configure +GossipingPropertyFileSnitch+ in `cassandra-rackdc.properties` file:
+
+[source,bash]
+----
+dc=WEU # and NEU respectively for nodes in North Europe
+rack=RACK1
+----
+
+TIP: Autoconfiguration could be possible in future using WAAgent info. Azure role topology information is captured by WAAgent daemon running on the node and dumped into /var/lib/waagent/SharedConfig.xml on each instance. However, this file does not contain PIP yet (only local and SLB IP). See http://azure.microsoft.com/en-us/documentation/articles/virtual-machines-linux-agent-user-guide/ and https://github.com/Azure/WALinuxAgent for more info on WAAgent.
+
+==== Results
+Start cassandra and you should see:
+
+----
+[datastax@cassandra-neu1 datastax]# nodetool status
+Datacenter: WEU
+===============
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+--  Address        Load       Tokens  Owns (effective)  Host ID                               Rack
+UN  23.100.9.111   70.28 KB   256     32.9%             3108c4eb-7057-4523-8049-413400e6159c  RAC1
+UN  23.100.13.2    93.25 KB   256     34.9%             7eacff33-f36d-44c1-a07e-ac11ae7f2cd8  RAC1
+UN  23.100.6.148   77.04 KB   256     32.8%             9140981b-b5cf-4555-8263-2f580e2a2407  RAC1
+Datacenter: NEU
+===============
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+--  Address        Load       Tokens  Owns (effective)  Host ID                               Rack
+UN  23.100.59.59   70.25 KB   256     33.2%             7783081a-ae27-49df-9cbd-4dc773b87b75  RAC1
+UN  23.100.60.67   77.07 KB   256     31.9%             2b14f6d5-aaea-48e1-a076-5f45d75230d9  RAC1
+UN  23.100.61.214  76.97 KB   256     34.3%             8ee3fa14-c82a-44a4-a17f-f5b3cfef2f8c  RAC1
+----
+
+Load test from another test instance in cassandra-weu to WEU local and PIP addresses provided similar results:
+
+----
+[datastax@cassandra-weu-test ~]$ cassandra-stress -R NetworkTopologyStrategy -e LOCAL_ONE -O "WEU:2,NEU:2" -d <weu1 pip>,<weu2 pip>
+...
+Averages from the middle 80% of values:
+interval_op_rate          : 17082
+interval_key_rate         : 17082
+latency median            : 1.4
+latency 95th percentile   : 7.1
+latency 99.9th percentile : 81.7
+Total operation time      : 00:01:00
+END
+----
+
+Same test test instance in cassandra-weu to NEU PIP:
+
+----
+[datastax@cassandra-weu-test ~]$ cassandra-stress -R NetworkTopologyStrategy -e LOCAL_ONE -O "WEU:2,NEU:2" -d <neu1 pip>,<neu2 pip>
+...
+Averages from the middle 80% of values:
+interval_op_rate          : 3223
+interval_key_rate         : 3223
+latency median            : 15.0
+latency 95th percentile   : 19.2
+latency 99.9th percentile : 191.3
+Total operation time      : 00:06:21
+END
+----
+
+Note that *throughput becomes almost 5 times less and latecy increases almost tenfold*. Similar performance observed when requesting EACH_QUORUM consistency level. This could be due to bandwidth / firewall / DDoS protection between datacenters.
+
+Even though local throughput is high, *overall cluster performance will be limited to the throughput between regions*.
