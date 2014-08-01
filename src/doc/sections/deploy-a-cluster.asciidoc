@@ -53,7 +53,7 @@ This next step is the bulk of the work that needs to be performed. This PowerShe
 .Provision with PowerShell
 [source,powershell,linenums]
 ----
-include::../../../src/scripts/provision.ps1[]
+include::../../../src/scripts/ProvisionCluster.ps1[]
 ----
 
 *TODO* Finish pre-configuration steps, identify ops-center node
