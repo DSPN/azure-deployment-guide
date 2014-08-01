@@ -1,5 +1,7 @@
 === Azure Multi-region Setup using Instance Level Public IPs
 
+:toc:
+
 Following tutorial shows how to setup multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using Public IPs (PIP).
 
 ==== Setup Network
