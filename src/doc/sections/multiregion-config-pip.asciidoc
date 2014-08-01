@@ -1,1 +1,107 @@
-## Azure Multi-region Setup using Instance Level Public IPs
+=== Azure Multi-region Setup using Instance Level Public IPs
+
+Following tutorial shows how to setup multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using Public IPs (PIP).
+
+==== Setup Network
+
+Public IP requires Regional (wide) VNet (which is different from Affinity Group VNet). By default Azure Portal will create Regional VNet.
+
+In Azure portal create two regional VNets (New > Virtual Network > Custom Create) with following settings, leaving all others empty:
+
+|===
+|VNet Name |Region | IP address space
+
+|cazzandra-rvnet-neu
+|North Europe
+|10.2.1.0/24
+
+|cazzandra-rvnet-weu
+|West Europe
+|10.2.2.0/24
+|===
+
+==== Setup Instances
+
+In each DC (Region) create a new CloudService and storage accounts.
+
+[source,powershell]
+----
+New-AzureService -ServiceName "cazzandra-neu" -Location "North Europe"
+New-AzureService -ServiceName "cazzandra-weu" -Location "West Europe"
+ 
+New-AzureStorageAccount -StorageAccountName "cazzandraneu" -Label "DataStax" -Location "North Europe"
+New-AzureStorageAccount -StorageAccountName "cazzandraweu" -Label "DataStax" -Location "West Europe"
+----
+
+Provision 3 VM instances with internal static IP (Set-AzureStaticVNetIP command) and public IP (Set-AzurePublicIP command) in each DC.
+
+[source,powershell]
+----
+# Get subscription name
+$subscription = Get-AzureSubscription | select -expand CurrentStorageAccountName
+ 
+# Set default storage account to North EU
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cazzandraneu"
+ 
+# Create instances in North EU region
+for($i=0; $i -le 2; $i++)
+{
+    $sshPort = 10000 + $i
+    $staticIP = 10+$i
+  
+    New-AzureVMConfig -Name "cazzandra-neu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -NoSSHEndpoint | `
+        Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
+        Set-AzureSubnet -SubnetNames "Subnet-1" | `
+        Set-AzureStaticVNetIP -IPAddress "10.2.1.$staticIP" | `
+        Set-AzurePublicIP -PublicIPName Cassandra | `
+        New-AzureVM -ServiceName "cazzandra-neu" -VNetName "cazzandra-rvnet-neu"
+}
+ 
+# Set default storage account to West EU
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cazzandraweu"
+ 
+# Create instances in West EU region
+for($i=0; $i -le 2; $i++)
+{
+    $sshPort = 10000 + $i
+    $staticIP = 10+$i
+ 
+    New-AzureVMConfig -Name "cazzandra-weu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -NoSSHEndpoint | `
+        Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
+        Set-AzureSubnet -SubnetNames "Subnet-1" |
+        Set-AzureStaticVNetIP -IPAddress "10.2.2.$staticIP" | `
+        Set-AzurePublicIP -PublicIPName Cassandra | `
+        New-AzureVM -ServiceName "cazzandra-weu" -VNetName "cazzandra-rvnet-weu"
+}
+----
+
+If you already have instances running, you can assign PublicIP for all VMs in the cloud service or individually using following commands:
+
+[source,powershell]
+----
+# all instances in CS
+Get-AzureVM -ServiceName cazzandra-weu | Set-AzurePublicIP -PublicIPName Cassandra | Update-AzureVM
+# single instance
+Get-AzureVM -ServiceName cazzandra-weu -Name cazzandra-weu2 | Set-AzurePublicIP -PublicIPName Cassandra | Update-AzureVM
+----
+
+Get list of PIPs for each VM instance:
+
+[source,powershell]
+----
+Get-AzureVM -ServiceName cazzandra-weu
+
+...
+PublicIPAddress             : 23.100.2.11
+...
+PublicIPAddress             : 23.100.2.12
+...
+----
+
+All ports are accessible on public IPs without mapping.
+
+[source,powershell]
+----
+----
