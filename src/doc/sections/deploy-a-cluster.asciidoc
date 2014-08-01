@@ -1,6 +1,6 @@
 
 //:source-highlighter: pygments
-//:pygments-linenums-mode: inline
+//:pygments-linenums-mode: table
 
 === Deploy A Cluster
 
@@ -51,7 +51,7 @@ azure network vnet create --affinity-group "TestGroup" --address-space 10.1.0.0 
 This next step is the bulk of the work that needs to be performed. This PowerShell script will actually do the work of starting up Azure instances. The top of the script contains a configuration section that should be customized to meet individual requirements. The individual items that need to be configured are explained after the code listing.
 
 .Provision with PowerShell
-[source,powershell,linenums]
+[source,ruby,linenums]
 ----
 include::../../../src/scripts/provision.ps1[]
 ----
