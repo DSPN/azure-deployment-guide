@@ -13,12 +13,12 @@ We will use following network setup:
 |===
 |Network |Local Network Site |Remote (Virtual) Network Site |Azure Region / DC
 
-|cazzandra-xdc-neu
+|cassandra-xdc-neu
 |10.1.1.0/24
 |10.1.2.0/24
 |NEU (North EU)
 
-|cazzandra-xdc-weu
+|cassandra-xdc-weu
 |10.1.2.0/24
 |10.1.1.0/24
 |WEU (West EU)
@@ -28,15 +28,15 @@ Create affinity groups:
 
 [source,powershell]
 ----
-New-AzureAffinityGroup -Name "CazzandraGroup-NEU" -Label "DataStax" -Location "North Europe"
-New-AzureAffinityGroup -Name "CazzandraGroup-WEU" -Label "DataStax" -Location "West Europe"
+New-AzureAffinityGroup -Name "CassandraGroup-NEU" -Label "DataStax" -Location "North Europe"
+New-AzureAffinityGroup -Name "CassandraGroup-WEU" -Label "DataStax" -Location "West Europe"
 ----
 
 Create VNets (there's no PowerShell cmdlet for that, use xplatform CLI or Portal):
 [source,powershell]
 ----
-azure network vnet create --affinity-group "CazzandraGroup-NEU" --address-space 10.1.2.0 --cidr 24 cazzandra-xdc-neu
-azure network vnet create --affinity-group "CazzandraGroup-WEU" --address-space 10.1.1.0 --cidr 24 cazzandra-xdc-weu
+azure network vnet create --affinity-group "CassandraGroup-NEU" --address-space 10.1.2.0 --cidr 24 cassandra-xdc-neu
+azure network vnet create --affinity-group "CassandraGroup-WEU" --address-space 10.1.1.0 --cidr 24 cassandra-xdc-weu
 ----
 
 Follow instructions from the following tutorial, at step 8 use commands below:
@@ -47,8 +47,8 @@ Configure gateway shared keys (Step 8):
 
 [source,powershell]
 ----
-Set-AzureVNetGatewayKey -VNetName cazzandra-xdc-weu -LocalNetworkSiteName cazzandra-xdc-neu -SharedKey CA33A7DA
-Set-AzureVNetGatewayKey -VNetName cazzandra-xdc-neu -LocalNetworkSiteName cazzandra-xdc-weu -SharedKey CA33A7DA
+Set-AzureVNetGatewayKey -VNetName cassandra-xdc-weu -LocalNetworkSiteName cassandra-xdc-neu -SharedKey CA33A7DA
+Set-AzureVNetGatewayKey -VNetName cassandra-xdc-neu -LocalNetworkSiteName cassandra-xdc-weu -SharedKey CA33A7DA
 ----
 
 ==== Setup Instances
@@ -57,23 +57,23 @@ We will use following instance setup:
 
 |===
 |Node |IP |Azure Region / DC
-|neu0 |10.0.1.10	|NEU
-|neu1	|10.0.1.11	|NEU
-|neu2	|10.0.1.12	|NEU
-|weu0	|10.0.2.10	|WEU
-|weu1	|10.0.2.11	|WEU
-|weu2	|10.0.2.12	|WEU
+|neu0 |10.0.1.10    |NEU
+|neu1   |10.0.1.11  |NEU
+|neu2   |10.0.1.12  |NEU
+|weu0   |10.0.2.10  |WEU
+|weu1   |10.0.2.11  |WEU
+|weu2   |10.0.2.12  |WEU
 |===
 
 In each region (Affinity Group) create new CloudService and storage account.
 
 [source,powershell]
 ----
-New-AzureService -ServiceName "cazzandra-neu" -AffinityGroup "CazzandraGroup-NEU"
-New-AzureService -ServiceName "cazzandra-weu" -AffinityGroup "CazzandraGroup-WEU"
+New-AzureService -ServiceName "cassandra-neu" -AffinityGroup "CassandraGroup-NEU"
+New-AzureService -ServiceName "cassandra-weu" -AffinityGroup "CassandraGroup-WEU"
  
-New-AzureStorageAccount -StorageAccountName "cazzandraneu" -AffinityGroup "CazzandraGroup-NEU"
-New-AzureStorageAccount -StorageAccountName "cazzandraweu" -AffinityGroup "CazzandraGroup-WEU"
+New-AzureStorageAccount -StorageAccountName "cassandraneu" -AffinityGroup "CassandraGroup-NEU"
+New-AzureStorageAccount -StorageAccountName "cassandraweu" -AffinityGroup "CassandraGroup-WEU"
 ----
 
 Provision 3 VM instances with static internal IPs (Set-AzureStaticVNetIP command) in each CloudService.
@@ -84,7 +84,7 @@ Provision 3 VM instances with static internal IPs (Set-AzureStaticVNetIP command
 $subscription = Get-AzureSubscription | select -expand CurrentStorageAccountName
   
 # Set default storage account to North EU
-Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cazzandraneu"
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cassandraneu"
   
 # Create instances in North EU affinity group
 for($i=0; $i -le 2; $i++)
@@ -92,16 +92,16 @@ for($i=0; $i -le 2; $i++)
     $sshPort = 10000 + $i
     $staticIP = 10+$i
  
-    New-AzureVMConfig -Name "cazzandra-neu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
-        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -NoSSHEndpoint | `
+    New-AzureVMConfig -Name "cassandra-neu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cassandra123" -NoSSHEndpoint | `
         Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
         Set-AzureSubnet -SubnetNames "Subnet-1" | `
         Set-AzureStaticVNetIP -IPAddress "10.0.1.$staticIP" | `
-        New-AzureVM -ServiceName "cazzandra-neu" -VNetName "cazzandra-xdc-neu"
+        New-AzureVM -ServiceName "cassandra-neu" -VNetName "cassandra-xdc-neu"
 }
   
 # Set default storage account to West EU
-Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cazzandraweu"
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cassandraweu"
   
 # Create instances in West EU affinity group
 for($i=0; $i -le 2; $i++)
@@ -109,12 +109,12 @@ for($i=0; $i -le 2; $i++)
     $sshPort = 10000 + $i
     $staticIP = 10+$i
   
-    New-AzureVMConfig -Name "cazzandra-weu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
-        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -NoSSHEndpoint | `
+    New-AzureVMConfig -Name "cassandra-weu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cassandra123" -NoSSHEndpoint | `
         Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
         Set-AzureSubnet -SubnetNames "Subnet-1" | `
         Set-AzureStaticVNetIP -IPAddress "10.0.2.$staticIP" | `
-        New-AzureVM -ServiceName "cazzandra-weu" -VNetName "cazzandra-xdc-weu"
+        New-AzureVM -ServiceName "cassandra-weu" -VNetName "cassandra-xdc-weu"
 }
 ----
 
@@ -127,7 +127,7 @@ Install Cassandra on all nodes following RHEL setup guide or using OpsCenter.
 
 In `cassandra.yaml` set followings:
 
-[source,powershell]
+[source,yaml]
 ----
 listen_address: <local static IP of the node>
 rpc_address: 0.0.0.0
@@ -148,7 +148,6 @@ rack=RACK1
 
 Add following lines to `/etc/hosts` file on all nodes:
 
-[source,powershell]
 ----
 10.0.1.10 neu0
 10.0.1.11 neu1
@@ -158,8 +157,41 @@ Add following lines to `/etc/hosts` file on all nodes:
 10.0.2.12 weu2
 ----
 
-[source,powershell]
-----
+==== Results
+
+Start cassandra and you should see:
 
 ----
+[datastax@cassandra-neu1 datastax]# nodetool status
+Datacenter: NEU
+===============
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+--  Address    Load       Owns (effective)  Host ID                               Token                                    Rack
+UN  10.0.1.12  59.04 KB   38.9%             c84a9d01-d8c9-4827-82ce-025efcda7cbd  -9217384904338704508                     RAC1
+UN  10.0.1.11  61.03 KB   40.6%             d5ad0a36-64e4-44cd-a427-ab2f6b0366e4  -9194586200473097853                     RAC1
+UN  10.0.1.10  61.03 KB   40.6%             d5ad0a36-64e4-44cd-a427-c93d992bffed  -9184918462767730700                     RAC1
+Datacenter: WEU
+===============
+Status=Up/Down
+|/ State=Normal/Leaving/Joining/Moving
+--  Address    Load       Owns (effective)  Host ID                               Token                                    Rack
+UN  10.0.2.12  55.37 KB   41.7%             c186d079-570f-4ab4-bb63-ab2f6b0366e4  -9181193292507748589                     RAC1
+UN  10.0.2.11  71.52 KB   40.4%             908ecf9c-b993-4dc4-8303-6dc2c7837bd7  -9194586200473097853                     RAC1
+UN  10.0.2.10  40.95 KB   38.4%             936dd280-c61d-4ca2-9434-0bc2315297b2  -9167191426354193827                     RAC1
+----
 
+Stress test results:
+
+----
+# cassandra-stress -R NetworkTopologyStrategy -e LOCAL_ONE -O "WEU:2,NEU:2"
+...
+ 
+Averages from the middle 80% of values:
+interval_op_rate          : 15292
+interval_key_rate         : 15292
+latency median            : 0.7
+latency 95th percentile   : 3.2
+latency 99.9th percentile : 109.0
+Total operation time      : 00:01:07
+----
