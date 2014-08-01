@@ -1,72 +1,88 @@
-##
-## Default settins can be configured in the param section below:
+<#
+.SYNOPSIS
+Automatic provisioning of Cassandra test and load generatig clusters in Azure.
+
+.EXAMPLE
+ ProvisionCluster.ps1 -clusterType cassandra -nodes 30 -cloudServices 3 ...
+
+Will provision Cassandra cluster with 90 nodes (3 x 30)
+
+.EXAMPLE
+ ProvisionCluster.ps1 -clusterType load -nodes 20 ...
+
+Will provision Load cluster with 20 nodes.
+#>
+
+## Default settins can be configured in the param section below or using command line params.
 param(
-    ## Type of cluster, one of two should be specified
-    [switch]$cassandra = $false
-    [switch]$load = $false
-
-    ## AffinityGroup Name
-    [string]$affinityGroup = "CassandraTestGroup"
-
-    ## VNET Name
-    [string]$vnetName = "cassandra-test-vnet"
-
-    ## Number of Cassandra VMs per CloudService. Max 50.
     [parameter(Mandatory=$true)]
-    [int]$nodes
+    [string]
+    ## Type of cluster. Specify 'cassandra' to start nodes for cassandra cluster or 'load' for load generation
+    $clusterType,
 
+    [string]
+    ## AffinityGroup Name
+    $affinityGroup = "CassandraTestGroup",
+
+    [string]
+    ## VNet Name
+    $vnetName = "cassandra-test-vnet",
+
+    [ValidateRange(1,50)]
+    [parameter(Mandatory=$true)]
+    [int]
+    ## Number of Cassandra VMs per CloudService. Max 50.
+    $nodes,
+
+    [ValidateRange(1,10)]
+    [int]
     ## Total number of Cassandra CloudServices (not applicable to Load cluster)
-    [int]$totalCloudService = 2
+    $cloudServices = 1,
 
+    [string]
     ## Instance Image
-    [string]$instanceImage = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606"
+    $instanceImage = "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606",
 
+    [ValidateSet("A0","A1","A2","A3","A4","A5","A6","A7","A8","A9")]
+    [string]
     ## Instance Size
-    [string]$instanceSize = "A7"
+    $instanceSize = "A7",
 
-    ## Path to certificate which will be used as SSH key.
-    ## If you don't have .cer key, follow instructions here: http://azure.microsoft.com/en-us/documentation/articles/linux-use-ssh-key/
-    [string]$certPath = "..\certs\datastax-test.cer"
+    [string]
+    ## SSH key certificate path. If you don't have .cer key, follow instructions here: http://azure.microsoft.com/en-us/documentation/articles/linux-use-ssh-key/
+    $certPath = "..\certs\datastax-test.cer",
 
-    ## Certificate Fingerprint (Fingerprint can be obtained form portal > cloud service > certificates)
-    [string]$certFP = "6316F4E5AA083390E615B13C85CAF1F11D47D4F6"
+    [string]
+    ## SSH key certificate fingerprint
+    $certFP = "6316F4E5AA083390E615B13C85CAF1F11D47D4F6",
 
-    ## Default username and password
-    [string]$linuxUser = "datastax"
-    [string]$linuxPass = "Cassandra123"
+    [string]
+    ## Linux username
+    $linuxUser = "datastax",
+    
+    [string]
+    ## Linux password
+    $linuxPass = "Cassandra123",
+
+    [string]
+    ## Azure service names are global, use unique prefix for cloud services and storage accounts
+    $uniquePrefix = "datastax"
 )
 ## End of config
 
-## Operation type
-if ($cassandra)
-    {
-        provisionCassandraCluster();
-    }
-else if ($load)
-    {
-        provisionLoadCluster();
-    }
-else
-    {
-        Write-Host "Operation type must be specified."
-        Write-Host "Usage: provision.ps1 [-cassandra|-load] -nodes <int> ..."
-        Write-Host "  -cassandra : start nodes for Cassandra cluster"
-        Write-Host "  -load : to start nodes for load generation."
-    }
-
-function provisionCassandraCluster()
+function ProvisionCassandraCluster()
 {
     ## Add Storage Accounts.
     ## 1 storage account for each 2 instances. 2 instances can use 80-90% of IOPS limit of single storage account.
-    for($i=1; $i -le ($nodes * $totalCloudService / 2); $i++)
+    for($i=1; $i -le ($nodes * $cloudServices / 2); $i++)
     {
-        New-AzureStorageAccount -StorageAccountName "datastaxperftest$i" -Label "DataStax" -AffinityGroup $affinityGroup
+        New-AzureStorageAccount -StorageAccountName "$($uniquePrefix)perftest$i" -Label "DataStax" -AffinityGroup $affinityGroup
     }
 
     ## Add Cassandra CloudService and VMs
-    for($cs=1; $cs -le $totalCloudService; $cs++)
+    for($cs=1; $cs -le $cloudServices; $cs++)
     {
-        $csName = "datastax-perftest$cs"
+        $csName = "$($uniquePrefix)-perftest$cs"
         New-AzureService -ServiceName $csName -AffinityGroup $affinityGroup
 
         ## Add Certificate to the store on the cloud service (.cer or .pfx with -Password)
@@ -82,7 +98,7 @@ function provisionCassandraCluster()
             $sshPort = 10000 + $instanceNumber
      
             ## 2 nodes per storage account
-            $storageContainer = "https://datastaxperftest$([math]::Ceiling($instanceNumber/2)).blob.core.windows.net/node$instanceNumber"
+            $storageContainer = "https://$($uniquePrefix)perftest$([math]::Ceiling($instanceNumber/2)).blob.core.windows.net/node$instanceNumber"
      
             ## Create new VM
             New-AzureVMConfig -Name "$csName-$instanceNumber" -ImageName $instanceImage -InstanceSize $instanceSize | `
@@ -110,10 +126,10 @@ function provisionCassandraCluster()
     }
 }
 
-function provisionLoadCluster()
+function ProvisionLoadCluster()
 {
     ## Add Stress Client CloudService
-    $stressClientCSName = "datastax-stresser"
+    $stressClientCSName = "$($uniquePrefix)-load"
     New-AzureService -ServiceName $stressClientCSName -AffinityGroup $affinityGroup
     Add-AzureCertificate -CertToDeploy $certPath -ServiceName $stressClientCSName
     $sshkey = New-AzureSSHKey -PublicKey -Fingerprint $certFP -Path '/home/datastax/.ssh/authorized_keys'
@@ -129,4 +145,50 @@ function provisionLoadCluster()
             Set-AzureSubnet -SubnetNames "Subnet-1" | Set-AzureStaticVNetIP -IPAddress "10.1.20.$i" | `
             New-AzureVM -ServiceName $stressClientCSName -VNetName $vnetName
     }
+}
+
+function Usage()
+{
+    Write-Output ""
+    Write-Output "For usage and examples type: 'Get-Help ProvisionCluster.ps1 -detailed'"
+}
+
+function InputInfo()
+{
+    Write-Output "Provisioning $clusterType cluster:"
+    Write-Output "   Affinity Group:      $affinityGroup"
+    Write-Output "   Virtual Network:     $vnetName"
+    Write-Output "   Unique Prefix:       $uniquePrefix"
+    Write-Output "   VM Image:            $instanceImage"
+    Write-Output "   VM Size:             $instanceSize"
+    Write-Output "   OS Username:         $linuxUser"
+    Write-Output "   OS Password:         $linuxPass"
+    Write-Output "   SSH Key Path:        $certPath"
+    Write-Output "   SSH Key Fingerprint: $certFP"
+}
+
+try {
+    ## Operation type
+    if ($clusterType -eq "cassandra")
+    {
+        InputInfo
+        Write-Output "   Nodes per CloudService: $nodes"
+        Write-Output "   Total CloudServices:    $cloudServices"
+        ProvisionCassandraCluster
+    }
+    elseif ($clusterType -eq "load")
+    {
+        InputInfo
+        Write-Output "   Total nodes:         $nodes"
+        ProvisionLoadCluster
+    }
+    else
+    {
+        Write-Output "Error: Unspecified or invalid operation type."
+        Usage
+    }
+} catch [System.Exception] {
+    Write-Host $_.Exception.ToString()
+    Usage
+    exit 1
 }
