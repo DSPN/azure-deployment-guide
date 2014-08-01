@@ -1,1 +1,165 @@
-## Azure Multi-region Setup using VNet-to-VNet
+=== Azure Multi-region Setup using VNet-to-VNet
+
+:toc:
+
+Following tutorial shows how to setup multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using VNet-to-VNet VPN.
+
+We will use following setup:
+
+==== Setup Network
+
+We will use following network setup:
+
+|===
+|Network |Local Network Site |Remote (Virtual) Network Site |Azure Region / DC
+
+|cazzandra-xdc-neu
+|10.1.1.0/24
+|10.1.2.0/24
+|NEU (North EU)
+
+|cazzandra-xdc-weu
+|10.1.2.0/24
+|10.1.1.0/24
+|WEU (West EU)
+|===
+
+Create affinity groups:
+
+[source,powershell]
+----
+New-AzureAffinityGroup -Name "CazzandraGroup-NEU" -Label "DataStax" -Location "North Europe"
+New-AzureAffinityGroup -Name "CazzandraGroup-WEU" -Label "DataStax" -Location "West Europe"
+----
+
+Create VNets (there's no PowerShell cmdlet for that, use xplatform CLI or Portal):
+[source,powershell]
+----
+azure network vnet create --affinity-group "CazzandraGroup-NEU" --address-space 10.1.2.0 --cidr 24 cazzandra-xdc-neu
+azure network vnet create --affinity-group "CazzandraGroup-WEU" --address-space 10.1.1.0 --cidr 24 cazzandra-xdc-weu
+----
+
+Follow instructions from the following tutorial, at step 8 use commands below:
+
+http://blogs.technet.com/b/aviraj/archive/2014/05/16/microsoft-azure-configure-cross-subscription-vnet-to-vnet-connectivity-in-azure.aspx
+
+Configure gateway shared keys (Step 8):
+
+[source,powershell]
+----
+Set-AzureVNetGatewayKey -VNetName cazzandra-xdc-weu -LocalNetworkSiteName cazzandra-xdc-neu -SharedKey CA33A7DA
+Set-AzureVNetGatewayKey -VNetName cazzandra-xdc-neu -LocalNetworkSiteName cazzandra-xdc-weu -SharedKey CA33A7DA
+----
+
+==== Setup Instances
+
+We will use following instance setup:
+
+|===
+|Node |IP |Azure Region / DC
+|neu0 |10.0.1.10	|NEU
+|neu1	|10.0.1.11	|NEU
+|neu2	|10.0.1.12	|NEU
+|weu0	|10.0.2.10	|WEU
+|weu1	|10.0.2.11	|WEU
+|weu2	|10.0.2.12	|WEU
+|===
+
+In each region (Affinity Group) create new CloudService and storage account.
+
+[source,powershell]
+----
+New-AzureService -ServiceName "cazzandra-neu" -AffinityGroup "CazzandraGroup-NEU"
+New-AzureService -ServiceName "cazzandra-weu" -AffinityGroup "CazzandraGroup-WEU"
+ 
+New-AzureStorageAccount -StorageAccountName "cazzandraneu" -AffinityGroup "CazzandraGroup-NEU"
+New-AzureStorageAccount -StorageAccountName "cazzandraweu" -AffinityGroup "CazzandraGroup-WEU"
+----
+
+Provision 3 VM instances with static internal IPs (Set-AzureStaticVNetIP command) in each CloudService.
+
+[source,powershell]
+----
+# Get subscription name
+$subscription = Get-AzureSubscription | select -expand CurrentStorageAccountName
+  
+# Set default storage account to North EU
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cazzandraneu"
+  
+# Create instances in North EU affinity group
+for($i=0; $i -le 2; $i++)
+{
+    $sshPort = 10000 + $i
+    $staticIP = 10+$i
+ 
+    New-AzureVMConfig -Name "cazzandra-neu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -NoSSHEndpoint | `
+        Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
+        Set-AzureSubnet -SubnetNames "Subnet-1" | `
+        Set-AzureStaticVNetIP -IPAddress "10.0.1.$staticIP" | `
+        New-AzureVM -ServiceName "cazzandra-neu" -VNetName "cazzandra-xdc-neu"
+}
+  
+# Set default storage account to West EU
+Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cazzandraweu"
+  
+# Create instances in West EU affinity group
+for($i=0; $i -le 2; $i++)
+{
+    $sshPort = 10000 + $i
+    $staticIP = 10+$i
+  
+    New-AzureVMConfig -Name "cazzandra-weu$i" -ImageName "5112500ae3b842c8b9c604889f8753c3__OpenLogic-CentOS-65-20140606" -InstanceSize "A7" | `
+        Add-AzureProvisioningConfig -Linux -LinuxUser "datastax" -Password "Cazzandra123" -NoSSHEndpoint | `
+        Add-AzureEndpoint -LocalPort 22 -Name 'SSH' -Protocol tcp -PublicPort "$sshPort" | `
+        Set-AzureSubnet -SubnetNames "Subnet-1" | `
+        Set-AzureStaticVNetIP -IPAddress "10.0.2.$staticIP" | `
+        New-AzureVM -ServiceName "cazzandra-weu" -VNetName "cazzandra-xdc-weu"
+}
+----
+
+If you already have instance running, it is possible to set or update static IP. For more info on internal static IPs see http://msdn.microsoft.com/en-us/library/azure/dn630228.aspx
+
+
+==== Setup Cassandra
+
+Install Cassandra on all nodes following RHEL setup guide or using OpsCenter.
+
+In `cassandra.yaml` set followings:
+
+[source,powershell]
+----
+listen_address: <local static IP of the node>
+rpc_address: 0.0.0.0
+seeds: <weu0 local ip>, <neu0 local ip>
+endpoint_snitch: GossipingPropertyFileSnitch
+data_directories: /mnt/resource/cassandra/data
+commitlog_directory: /mnt/resource/cassandra/commitlog
+saved_caches_directory: /mnt/resource/cassandra/saved_caches
+----
+
+Configure +GossipingPropertyFileSnitch+ in `cassandra-rackdc.properties` file:
+
+[source,bash]
+----
+dc=WEU # and NEU respectively for nodes in North Europe
+rack=RACK1
+----
+
+Add following lines to `/etc/hosts` file on all nodes:
+
+[source,powershell]
+----
+10.0.1.10 neu0
+10.0.1.11 neu1
+10.0.1.12 neu2
+10.0.2.10 weu0
+10.0.2.11 weu1
+10.0.2.12 weu2
+----
+
+[source,powershell]
+----
+
+----
+
