@@ -25,7 +25,6 @@ We will use following network setup:
 |===
 
 Create affinity groups:
-
 [source,powershell]
 ----
 New-AzureAffinityGroup -Name "CassandraGroup-NEU" -Label "DataStax" -Location "North Europe"
@@ -40,11 +39,9 @@ azure network vnet create --affinity-group "CassandraGroup-WEU" --address-space 
 ----
 
 Follow instructions from the following tutorial, at step 8 use commands below:
-
 http://blogs.technet.com/b/aviraj/archive/2014/05/16/microsoft-azure-configure-cross-subscription-vnet-to-vnet-connectivity-in-azure.aspx
 
 Configure gateway shared keys (Step 8):
-
 [source,powershell]
 ----
 Set-AzureVNetGatewayKey -VNetName cassandra-xdc-weu -LocalNetworkSiteName cassandra-xdc-neu -SharedKey CA33A7DA
@@ -66,7 +63,6 @@ We will use following instance setup:
 |===
 
 In each region (Affinity Group) create new CloudService and storage account.
-
 [source,powershell]
 ----
 New-AzureService -ServiceName "cassandra-neu" -AffinityGroup "CassandraGroup-NEU"
@@ -77,7 +73,6 @@ New-AzureStorageAccount -StorageAccountName "cassandraweu" -AffinityGroup "Cassa
 ----
 
 Provision 3 VM instances with static internal IPs (Set-AzureStaticVNetIP command) in each CloudService.
-
 [source,powershell]
 ----
 # Get subscription name
@@ -126,7 +121,6 @@ If you already have instance running, it is possible to set or update static IP.
 Install Cassandra on all nodes following RHEL setup guide or using OpsCenter.
 
 In `cassandra.yaml` set followings:
-
 [source,yaml]
 ----
 listen_address: <local static IP of the node>
@@ -139,7 +133,6 @@ saved_caches_directory: /mnt/resource/cassandra/saved_caches
 ----
 
 Configure +GossipingPropertyFileSnitch+ in `cassandra-rackdc.properties` file:
-
 [source,bash]
 ----
 dc=WEU # and NEU respectively for nodes in North Europe
@@ -147,7 +140,6 @@ rack=RACK1
 ----
 
 Add following lines to `/etc/hosts` file on all nodes:
-
 ----
 10.0.1.10 neu0
 10.0.1.11 neu1
@@ -160,7 +152,6 @@ Add following lines to `/etc/hosts` file on all nodes:
 ==== Results
 
 Start cassandra and you should see:
-
 ----
 [datastax@cassandra-neu1 datastax]# nodetool status
 Datacenter: NEU
@@ -182,7 +173,6 @@ UN  10.0.2.10  40.95 KB   38.4%             936dd280-c61d-4ca2-9434-0bc2315297b2
 ----
 
 Stress test results:
-
 ----
 # cassandra-stress -R NetworkTopologyStrategy -e LOCAL_ONE -O "WEU:2,NEU:2"
 ...
