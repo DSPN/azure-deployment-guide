@@ -18,6 +18,9 @@ include::{sourcedir}/sections/prep-for-opscenter.asciidoc[]
 include::{sourcedir}/common/opscenter-deploy.asciidoc[]
 
 include::{sourcedir}/sections/dse-azure-deployment-considerations.asciidoc[]
+include::{sourcedir}/sections/multiregion-dc-configuration.asciidoc[]
+include::{sourcedir}/sections/multiregion-config-vpn.asciidoc[]
+include::{sourcedir}/sections/multiregion-config-pip.asciidoc[]
 //Grow the cluster
 //include::{sourcedir}/sections/adding-nodes.asciidoc[]
 
