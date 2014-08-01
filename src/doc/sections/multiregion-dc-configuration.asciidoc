@@ -3,8 +3,8 @@
 
 There are two ways to configure multi-region DSE/Cassandra cluster in Azure:
 
-1. Instance Level Public IP (PIP)
-1. VNet-to-VNet
+. Instance Level Public IP (PIP)
+. VNet-to-VNet
 
 http://msdn.microsoft.com/en-us/library/azure/dn690118.aspx[Instance-Level Public IP Addresses] can be assigned to each Cassandra cluster node effectively allowing all Cassandra nodes to speak to each other over public internet. Drawbacks in comparison to VNet-to-VNet setup are:
 

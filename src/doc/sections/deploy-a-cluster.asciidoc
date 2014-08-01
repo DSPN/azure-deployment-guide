@@ -1,27 +1,20 @@
 
-//:source-highlighter: pygments
-//:pygments-linenums-mode: table
-
 === Deploy A Cluster
 
-.Prerequisites
+==== Prerequisites
 
-. Obtain an MS Live ID
-A *Microsoft Live ID* is required to sign in to Azure. A Live ID is an account with an email address and password associated with it that allows users to sign in to a variety of Microsoft web properties, including Azure. Live IDs can be obtained by filling out https://signup.live.com[this form].
+Obtain an MS Live ID:: A *Microsoft Live ID* is required to sign in to Azure. A Live ID is an account with an email address and password associated with it that allows users to sign in to a variety of Microsoft web properties, including Azure. Live IDs can be obtained by filling out https://signup.live.com[this form].
 
-. Sign in to Azure
-Using an MS Live ID, http://azure.microsoft.com/en-us/account/[sign in to the Azure control panel] and configure the basic details required to run Azure, such as billing and contact information. Alternatively, new users can http://azure.microsoft.com/en-us/pricing/free-trial/[sign up for a free trial] period that includes a $200 credit.
+Sign in to Azure:: Using an MS Live ID, http://azure.microsoft.com/en-us/account/[sign in to the Azure control panel] and configure the basic details required to run Azure, such as billing and contact information. Alternatively, new users can http://azure.microsoft.com/en-us/pricing/free-trial/[sign up for a free trial] period that includes a $200 credit.
 
-. Set up a PowerShell Environment
-Configuring nodes for DSE requires the Azure PowerShell cmdlets and Azure account credentials to be configured in a PowerShell environment. This can either be run on a local workstation, or via an Azure VM. These links provide instructions for setting up the PowerShell environment:
+Set up a PowerShell Environment:: Configuring nodes for DSE requires the Azure PowerShell cmdlets and Azure account credentials to be configured in a PowerShell environment. This can either be run on a local workstation, or via an Azure VM. These links provide instructions for setting up the PowerShell environment:
 
 * http://azure.microsoft.com/en-us/documentation/articles/install-configure-powershell/[Install Powershell for Azure]
 
 
 * http://blogs.technet.com/b/askpfeplat/archive/2013/04/14/building-a-vm-in-windows-azure-using-powershell-in-a-few-quick-steps.aspx[Configuring Azure cmdlets in PowerShell]
 
-
-.Provision Nodes
+==== Provision Nodes
 
 With prerequisites out of the way, it is time to set up the Azure environment. The following steps make heavy use of example scripts. These scripts should be modified to meet individual deployment requirements. Users are of course welcome to make parameterized versions of these scripts and the DSPN will happily accept pull-requests for improvements.
 
@@ -50,10 +43,46 @@ azure network vnet create --affinity-group "TestGroup" --address-space 10.1.0.0 
 
 This next step is the bulk of the work that needs to be performed. This PowerShell script will actually do the work of starting up Azure instances for Cassandra and load generating clusters. To get help page with usage info and examples, type `Get-Help ProvisionCluster.ps1 -detailed` in PowerShell console.
 
+
 .Provision with PowerShell
-[source,ruby,linenums]
+[source,powershell]
 ----
 include::../../../src/scripts/ProvisionCluster.ps1[]
 ----
 
-*TODO* Finish pre-configuration steps, identify ops-center node
+Depending on the number of nodes being provisioned, it can take some time for all of the nodes to spin up. Sometimes hiccups can occur during the provisioning process and a node or two won't have been fully configured correctly. For example, it is possible for nodes to appear to be online, but it isn't possible to log in to them. Keep an eye out for these kinds of anomalies in the next step and reprovision the problematic nodes if this occurs.
+
+The next step is to configure sudoers so that the rest of the scripts can be executed without having to constantly provide admin passwords. This script can be adapted to help accomplish that. Note that it is usually helpful to have your admin password copied to your clipboard so that it can just be pasted in when prompted rather than having to re-type it for every node.
+
+.Setup sudoers
+[source,bash]
+----
+include::../../../src/scripts/setup_sudoers.sh[]
+----
+
+Next, the OS and disks will need to be configured. The setup_diskandos.sh script needs to be copied to each of the nodes and executed. Customize this script if disk configuration was changed in the provisioning script. Also provided is a convenience script that copies, chmods and executes the script on each node. So, to execute this step, customize the scripts and then: `./run_script_on_all_nodes.sh setup_diskandos.sh`
+
+.Disk & OS Configuration
+[source,bash]
+----
+include::../../../src/scripts/setup_diskandos.sh[]
+----
+
+.Execution Helper
+[source,bash]
+----
+include::../../../src/scripts/run_script_on_all_nodes.sh[]
+----
+
+
+Finally, before OpsCenter can provision the cluster, Java will have to be installed on all the nodes. This script can be used upload and install a Java RPM. Prior to running this step, download a stable RPM release of Java 7 from http://www.oracle.com/technetwork/java/javase/downloads/index.html[Oracle's Java download site]
+
+Then customize and run this script to install & configure Java & JNA.
+
+.Setup Java
+[source,bash]
+----
+include::../../../src/scripts/setup_java.sh[]
+----
+
+Now the cluster is prepared for OpsCenter to deploy DSE. 

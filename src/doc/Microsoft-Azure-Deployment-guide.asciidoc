@@ -1,12 +1,21 @@
+//:source-highlighter: coderay
+//:coderay-linenums-mode: table
+//:source-highlighter: prettify
+//:prettify-linenums-mode: inline
+:source-highlighter: highlightjs
+:highlightjs-linenums-mode: inline
+:highlightjsdir: http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.0/
+:highlightjs-theme: foundation
+:prewrap!:
+
 == DataStax Enterprise Deployment Guide for Microsoft Azure Cloud
 
-:doctype: book
+//:doctype: book
 :sourcedir: ./src/doc
 //Pages that pull in images do so from an unusual parent dir
 :imagesdir: ../../images
 
 include::{sourcedir}/sections/overview.asciidoc[]
-//Include submodule?
 include::{sourcedir}/common/about-datastax.asciidoc[]
 include::{sourcedir}/sections/about-azure.asciidoc[]
 
