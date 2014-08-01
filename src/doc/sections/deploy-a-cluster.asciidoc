@@ -48,7 +48,7 @@ This next step can be performed via the Azure Portal under the *Networks* menu. 
 azure network vnet create --affinity-group "TestGroup" --address-space 10.1.0.0 --cidr 16 test-vnet
 ----
 
-This next step is the bulk of the work that needs to be performed. This PowerShell script will actually do the work of starting up Azure instances. The top of the script contains a configuration section that should be customized to meet individual requirements. The individual items that need to be configured are explained after the code listing.
+This next step is the bulk of the work that needs to be performed. This PowerShell script will actually do the work of starting up Azure instances for Cassandra and load generating clusters. To get help page with usage info and examples, type `Get-Help ProvisionCluster.ps1 -detailed` in PowerShell console.
 
 .Provision with PowerShell
 [source,powershell,linenums]
