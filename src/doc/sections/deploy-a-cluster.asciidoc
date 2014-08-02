@@ -41,7 +41,7 @@ This next step can be performed via the Azure Portal under the *Networks* menu. 
 azure network vnet create --affinity-group "TestGroup" --address-space 10.1.0.0 --cidr 16 test-vnet
 ----
 
-This next step is the bulk of the work that needs to be performed. This PowerShell script will actually do the work of starting up Azure instances for Cassandra and load generating clusters. To get help page with usage info and examples, type `Get-Help ProvisionCluster.ps1 -detailed` in PowerShell console.
+This next step is the bulk of the work that needs to be performed. This PowerShell script will actually do the work of starting up Azure instances for Cassandra and load generating clusters. To get a detailed help page with usage info and examples, type `Get-Help ProvisionCluster.ps1 -detailed` in the PowerShell console.
 
 
 .Provision with PowerShell
@@ -52,7 +52,7 @@ include::../../../src/scripts/ProvisionCluster.ps1[]
 
 Depending on the number of nodes being provisioned, it can take some time for all of the nodes to spin up. Sometimes hiccups can occur during the provisioning process and a node or two won't have been fully configured correctly. For example, it is possible for nodes to appear to be online, but it isn't possible to log in to them. Keep an eye out for these kinds of anomalies in the next step and reprovision the problematic nodes if this occurs.
 
-The next step is to configure sudoers so that the rest of the scripts can be executed without having to constantly provide admin passwords. This script can be adapted to help accomplish that. Note that it is usually helpful to have your admin password copied to your clipboard so that it can just be pasted in when prompted rather than having to re-type it for every node.
+The next step is to configure sudoers so that the rest of the scripts can be executed without having to constantly provide admin passwords. This script can be adapted to help accomplish that. Note that it is usually helpful to have the admin password copied to the clipboard so that it can just be pasted in when prompted rather than having to re-type it for every node.
 
 .Setup sudoers
 [source,bash]
@@ -85,4 +85,4 @@ Then customize and run this script to install & configure Java & JNA.
 include::../../../src/scripts/setup_java.sh[]
 ----
 
-Now the cluster is prepared for OpsCenter to deploy DSE. 
+Now the cluster is prepared for OpsCenter to deploy DSE.
