@@ -1,0 +1,36 @@
+
+=== Prepare for Ops-Center Deployment
+
+==== Install OpsCenter
+
+Choose a node to serve as the OpsCenter node for the cluster. Connect to that node with ssh, and follow http://www.datastax.com/documentation/opscenter/5.0/opsc/install/opscInstallRHEL_t.html[these instructions to install OpsCenter].
+
+Once OpsCenter is installed, Azure will need to be configured to pass traffic to the OpsCenter web port via a public IP. It is also advisable at this point to set up SSL and enable authentication for OpsCenter users. http://www.datastax.com/documentation/opscenter/5.0/opsc/configure/opscEnableSSLpkg.html[Follow these instructions] to set up SSL. Note that it is not necessary at this point to configure the agents for SSL since they haven't been deployed yet. http://www.datastax.com/documentation/opscenter/5.0/opsc/configure/opscEnablingAuth.html[Follow these instructions] to enable user authentication in OpsCenter.
+
+==== Configure the OpsCenter Endpoint
+
+To forward OpsCenter web traffic from a public IP to the OpsCenter node, set up an _endpoint_ for the node in the Azure Control Panel. Under the _Virtual Machines_ tab, click the node OpsCenter is installed on and then choose the _endpoint_ option from the menu at the top as shown in the image.
+
+image::endpoints.png[]
+
+Click the _Add_ button on the bottom menu, and in the dialog, select the "Add a standalone endpoint" radio button, then click the arrow at the bottom. On page 2, give the endpoint a name, "OpsCenter" works just fine. The _private port_ value should be set to the SSL port from the prior step. Set the _public port_ to whatever is convenient, but it's probably a good idea to use port 443, which is standard for SSL. Do not check the checkboxes at the bottom of the page that have to do with load-balancing and direct server return.
+
+When complete, the endpointed should be listed in the table as shown in the image below.
+
+image::endpoint-table.png[]
+
+Using the URL for the Cloud Service (check the Cloud Services tab on the left) the OpsCenter application should now be accessible in a web browser. In the next section, use this domain name as the value for <ops-center-ip> and also change the port in the example accordingly if a _public port_ other than 8888 was set when the endpoint was configured.
+
+==== Collect Node IPs
+
+The last item required by the OpsCenter install is the list of node IP addresses that DSE will be installed on. It is most convenient to prepare this in a text editor ahead of time, one IP per line as shown in the example below. This can then easily be copy/pasted into OpsCenter later.
+
+----
+10.0.1.1
+10.0.1.2
+10.0.1.3
+...
+10.0.1.4
+----
+
+IMPORTANT: In order for OpsCenter to deploy DataStax Enterprise, download credentials will need to be obtained from http://www.datastax.com/download/register
