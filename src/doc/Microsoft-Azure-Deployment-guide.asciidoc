@@ -4,7 +4,7 @@
 //:prettify-linenums-mode: inline
 :source-highlighter: highlightjs
 :highlightjs-linenums-mode: inline
-:highlightjsdir: http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.0/
+:highlightjsdir: http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.0
 :highlightjs-theme: foundation
 :prewrap!:
 
