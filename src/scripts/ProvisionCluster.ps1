@@ -74,7 +74,7 @@ function ProvisionCassandraCluster()
 {
     ## Add Storage Accounts.
     ## 1 storage account for each 2 instances. 2 instances can use 80-90% of IOPS limit of single storage account.
-    for($i=1; $i -le ($nodes * $cloudServices / 2); $i++)
+    for($i=1; $i -le ((($nodes * $cloudServices) + 1) / 2); $i++)
     {
         New-AzureStorageAccount -StorageAccountName "$($uniquePrefix)perftest$i" -Label "DataStax" -AffinityGroup $affinityGroup
     }
@@ -89,7 +89,7 @@ function ProvisionCassandraCluster()
         Add-AzureCertificate -CertToDeploy $certPath -ServiceName "$csName"
      
         ## Create a certificate in the users home directory.
-        $sshkey = New-AzureSSHKey -PublicKey -Fingerprint $certFP -Path '/home/datastax/.ssh/authorized_keys'
+        $sshkey = New-AzureSSHKey -PublicKey -Fingerprint $certFP -Path "/home/$linuxUser/.ssh/authorized_keys"
      
         for($i=1; $i -le $nodes; $i++)
         {
@@ -132,7 +132,7 @@ function ProvisionLoadCluster()
     $stressClientCSName = "$($uniquePrefix)-load"
     New-AzureService -ServiceName $stressClientCSName -AffinityGroup $affinityGroup
     Add-AzureCertificate -CertToDeploy $certPath -ServiceName $stressClientCSName
-    $sshkey = New-AzureSSHKey -PublicKey -Fingerprint $certFP -Path '/home/datastax/.ssh/authorized_keys'
+    $sshkey = New-AzureSSHKey -PublicKey -Fingerprint $certFP -Path "/home/$linuxUser/.ssh/authorized_keys"
 
     ## Add Stress Client VMs
     for($i=1; $i -le $nodes; $i++)
