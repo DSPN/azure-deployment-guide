@@ -78,7 +78,7 @@ Provision 3 VM instances with static internal IPs (Set-AzureStaticVNetIP command
 [source,powershell]
 ----
 # Get subscription name
-$subscription = Get-AzureSubscription | select -expand CurrentStorageAccountName
+$subscription = Get-AzureSubscription -Current | select -expand SubscriptionName
 
 # Set default storage account to North EU
 Set-AzureSubscription -SubscriptionName $subscription -CurrentStorageAccountName "cassandraneu"
