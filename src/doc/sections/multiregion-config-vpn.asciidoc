@@ -3,7 +3,7 @@
 
 :toc:
 
-This tutorial shows how to setup a multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using VNet-to-VNet VPN.
+This tutorial shows how to setup a multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using VNet-to-VNet VPN. These scripts set up two data centers, each with three nodes. Modify the loop parameters to increase the number of nodes in each data center.
 
 ===== Setup Network
 

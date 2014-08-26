@@ -28,9 +28,8 @@ The last item required by the OpsCenter install is the list of node IP addresses
 ----
 10.0.1.1
 10.0.1.2
-10.0.1.3
 ...
-10.0.1.4
+10.0.1.6
 ----
 
 IMPORTANT: In order for OpsCenter to deploy DataStax Enterprise, download credentials will need to be obtained from http://www.datastax.com/download/register

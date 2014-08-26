@@ -16,7 +16,7 @@ Set up a PowerShell Environment:: Configuring nodes for DSE requires the Azure P
 
 ==== Provision Nodes
 
-With prerequisites out of the way, it is time to set up the Azure environment. The following steps make heavy use of example scripts. These scripts should be modified to meet individual deployment requirements. Users are of course welcome to make parameterized versions of these scripts and the DSPN will happily accept pull-requests for improvements.
+With prerequisites out of the way, it is time to set up the Azure environment. The following steps make heavy use of example scripts. These scripts should be modified to meet individual deployment requirements the examples here are for a six node cluster. Users are of course welcome to make parameterized versions of these scripts and the DSPN will happily accept pull-requests for improvements.
 
 .Configure the Affinity Group
 [source,powershell]

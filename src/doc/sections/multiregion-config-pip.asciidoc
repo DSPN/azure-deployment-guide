@@ -3,7 +3,7 @@
 
 :toc:
 
-Following tutorial shows how to setup multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using Public IPs (PIP).
+Following tutorial shows how to setup multi-region Cassandra cluster between West Europe (WEU) and North Europe (NEU) in Azure using Public IPs (PIP). These scripts set up two data centers, each with three nodes. Modify the loop parameters to increase the number of nodes in each data center.
 
 ===== Setup Network
 

@@ -10,7 +10,7 @@ Cloud Service Fault Zones:: There are two Fault Zones per Cloud Service that map
 Upgrade Domains:: Azure maintains five upgrade domains that group servers together that will be unavailable when the Host OS is being serviced, upgraded or rebooted. These domains do not have a correlation with Fault Zones. DSE does not have a distinction between a physical failure and a node not being available due to an upgrade. These upgrade domains can also be mapped to the DSE rack-concept, but it is possible in that case that replica placement would happen entirely within one physical fault domain.
 
 At this point, the recommendation is to *map Upgrade Domains to DSE racks*. Given the fact that if an actual physical failure occurs in a Fault Zone, the nodes will be immediately rebooted on other physical hosts, that type of event should result in only seconds to minutes of downtime while the nodes are booted to different physical servers. However, an outage in an upgrade domain could mean a significant amount of downtime for that set of replicas.
-DataStax and Microsoft are collaborating on improving the situation further so that the Azure high availability infrastructure better maps to DSE's high availability mechanisms.
+DataStax and Microsoft are collaborating on better aligning the Azure high availability infrastructure and DSE's high avaialability mechanisms.
 
 It is also recommended to use multi-region datacenters to further reduce the chance of loss of availability. That is described in the next section.
 

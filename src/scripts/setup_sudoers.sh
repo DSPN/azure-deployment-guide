@@ -19,7 +19,7 @@ APPDOMAIN=datastax-test.cloudapp.net
 USERID=datastax
 KEYFILE=~/.azurekeys/datastax-test.key
 
-for nodeport in {10001..10050};
+for nodeport in {10001..10006};
 do
 	ssh -t -i ${KEYFILE} ${USERID}@${APPDOMAIN} -p ${nodeport} 'echo -e "%datastax\tALL = (ALL) NOPASSWD: ALL" | sudo tee -a /etc/sudoers'
 done

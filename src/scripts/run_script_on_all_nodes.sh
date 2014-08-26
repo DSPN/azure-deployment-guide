@@ -10,7 +10,7 @@ USERID=datastax
 KEYFILE=~/.azurekeys/datastax-test.key
 SCRIPT=$1
 
-for nodeport in {10001..10060}; 
+for nodeport in {10001..10006}; 
 do 
 	scp -P ${nodeport} -i ${KEYFILE} ${SCRIPT} ${USERID}@${APPDOMAIN}:
 	ssh -t -i ${KEYFILE} ${USERID}@${APPDOMAIN} -p ${nodeport} "chmod +x $SCRIPT; sudo ~/$SCRIPT"

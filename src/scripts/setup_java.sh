@@ -5,13 +5,17 @@
 #installs the new Java RPM. Always use an Oracle JVM
 #on production DSE or Cassandra clusters.
 
+#Removing the OpenJDK is optional, but it will help
+#reduce operator confusion later if the node needs
+#maintenance.
+
 APPDOMAIN=datastax-test.cloudapp.net
 USERID=datastax
 KEYFILE=~/.azurekeys/datastax-test.key
 JAVA_RPM=~/Downloads/jre-7u60-linux-x64.rpm
 JNA=~/Downloads/jna-4.1.0.jar
 
-for nodeport in {10001..10050}; 
+for nodeport in {10001..10006}; 
 do 
 	scp -P ${nodeport} -i ${KEYFILE} ${JAVA_RPM} ${USERID}@${APPDOMAIN}:
 	scp -P ${nodeport} -i ${KEYFILE} ${JNA} ${USERID}@${APPDOMAIN}:

@@ -5,3 +5,25 @@ Azure is an open and flexible cloud platform that enables you to quickly build, 
 
 For more information, visit: https://azure.microsoft.com/en-us/overview/what-is-azure/
 //From: https://azure.microsoft.com/en-us/overview/what-is-azure/
+
+==== Azure Technical Background
+
+Azure has some technical conventions that might be unfamiliar to those with a background in other cloud or virtualization systems. It is helpful to understand some of these conventions up front before beginning to deploy clusters. In particular, large DSE clusters will max-out the resource quotas in Azure so it is important to understand how to effectively use the correct types of resources and how to spread out use over multiple resources.
+
+===== Recommended Instance Types 
+
+Microsoft Azure virtual machine types come in a wide range of sizes and capabilities. http://msdn.microsoft.com/library/azure/dn197896.aspx[This document] describes the various instance types in detail.
+
+DataStax recommends using *A7* instance types or higher for optimal performance. These instance types provide larger memory footprints that will help keep hot data in the OS buffer cache. These instances are also optimized to provide the maximum IOPS available. *A4* instances are also capable of utilizing maximum IOPS, but have a much smaller DRAM footprint, and so should be used conservatively for testing or development, or when maximum performance is not critical.
+
+===== Azure Port Forwarding
+
+Azure does not expose a public IP address for every single instance. Instead, services use port-forwarding to expose access via a single domain name. For the purposes of running DSE, the primary port of interest is ssh. The scripts in this document make heavy use of ssh to configure the cluster, so it helps to understand this mechanism. As each instance is started, the local ssh port (port 22) is forwarded to a monotonically increasing external port number that is publicly exposed, starting at 10001 and increasing to as high as 10050 for each Cloud Service. More information on this mechanism is available at http://azure.microsoft.com/en-us/documentation/articles/virtual-machines-set-up-endpoints/[this link].
+
+===== Storage Accounts
+
+Azure divides disk resources among _storage accounts_ under an individual user account. There can be many storage accounts in an individual user account. Storage accounts are a mechanism to to manage IO resources, more information is available at http://windowsitpro.com/azure/maximize-azure-storage-performance[this link]. For the purposes of running DSE, it is important to note that a single storage account should not should not be shared between more than two nodes if DSE is configured like the examples in the scripts in this document. This document configures each node to have 16 disks. Each disk has a limit of 500 IOPS. This yields 8000 IOPS when configured in RAID-0. So, two nodes will hit 16,000 IOPS and three would exceed the limit.
+
+===== Affinity Groups
+
+To keep latency low between nodes and between nodes and storage, be sure to define an affinity group for the cluster. See http://social.technet.microsoft.com/wiki/contents/articles/7916.importance-of-windows-azure-affinity-groups.aspx[this document] for more information.
