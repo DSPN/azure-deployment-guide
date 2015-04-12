@@ -1,0 +1,3 @@
+var data = {
+    name: "Foo"
+};
