@@ -27,7 +27,7 @@ For most production applications we recommend a D14 as it makes use of the entir
 
 Smaller D series boxes such as the D1 are great for testing out deployments but we would not recommend them for production use.
 
-G series machines are well suited to memory intensive workloads such as Spark and Solr.  For such workloads the following instances are recommended, though D series may suffice as well:
+G series machines are well suited to memory intensive workloads such as Spark and Solr.  For such workloads the following instances are recommended, though larger D series may suffice as well:
 
 * G4
 * G5
