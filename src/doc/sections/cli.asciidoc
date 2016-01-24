@@ -5,4 +5,4 @@ DataStax has built a GitHub repo that has a number of Azure Resource Manager (AR
 
 The youtube video below gives a detailed walkthrough showing how to deploy a DataStax Enterprise cluster using the Azure CLI.
 
-video::vacp267zLBA[youtube]
+https://youtu.be/vacp267zLBA[Deploying DataStax with the Azure CLI]
