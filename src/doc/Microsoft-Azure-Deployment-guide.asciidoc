@@ -12,12 +12,10 @@
 include::{sourcedir}/sections/overview.asciidoc[]
 include::{sourcedir}/common/about-datastax.asciidoc[]
 
-include::{sourcedir}/sections/about-azure.asciidoc[]
-include::{sourcedir}/sections/dse-azure-deployment-considerations.asciidoc[]
+include::{sourcedir}/sections/deployment-considerations.asciidoc[]
 
-# Using Marketplace
-
-# Using Command Line
-include::{sourcedir}/sections/deploy-a-cluster.asciidoc[]
+include::{sourcedir}/sections/prerequisites.asciidoc[]
+include::{sourcedir}/sections/marketplace.asciidoc[]
+include::{sourcedir}/sections/cli.asciidoc[]
 
 include::{sourcedir}/sections/conclusion.asciidoc[]

@@ -1,4 +1,6 @@
-=== About Microsoft Azure
+=== Deployment Considerations
+
+==== About Microsoft Azure
 
 For detailed information about Microsoft Azure, please visit: https://azure.microsoft.com/
 
@@ -6,7 +8,7 @@ There are some key Azure topics covered here that are helpful to understand befo
 
 ==== Recommended Machine Types
 
-==== Ephemeral Storage
+===== Ephemeral Storage
 
 DataStax Enterprise workloads perform best when given a balance of CPU, Memory and low-latency storage.  Most of our work to date has relied on instances with ephemeral storage.  A series instances use a spinning disk for ephemeral storage.  DataStax does not recommend A series machines for any DSE application.
 
@@ -32,7 +34,7 @@ G series machines are well suited to memory intensive workloads such as Spark an
 
 More information on Azure instance types is available here: https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux Note that Linux instances are significantly less expensive than their Windows counterparts.
 
-==== Premium Storage
+===== Premium Storage
 
 D and G series machines are also available as DS and GS series boxes.  The DS and GS are physical identical to their D and G brethern, but use part of the ephemeral SSD as a cache for Premium Storage.  In the case of a D14, the 800GB SSD is split into a 224GB ephemeral and a 576GB cache.
 

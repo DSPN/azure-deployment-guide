@@ -1,0 +1,4 @@
+
+=== Conclusion
+
+This document covers tha basics of getting up and running with DataStax Entperprise in Azure. The OpsCenter based deployment shown here does not include rack awareness. Production deployments should use Azure's metadata service to implement rack awareness and Azure regions to implement data centers. Instructions on how to install and configure DSE for more complex topologies can be found here: http://docs.datastax.com/en/datastax_enterprise/4.8/datastax_enterprise/install/installTOC.html

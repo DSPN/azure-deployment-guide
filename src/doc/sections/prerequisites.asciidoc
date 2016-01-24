@@ -1,0 +1,14 @@
+
+=== Prerequisites
+
+Obtain an MS Live ID:: A *Microsoft Live ID* is required to sign in to Azure. A Live ID is an account with an email address and password associated with it that allows users to sign in to a variety of Microsoft web properties, including Azure. Live IDs can be obtained by filling out https://signup.live.com[this form].
+
+Sign in to Azure:: Using an MS Live ID, http://azure.microsoft.com/en-us/account/[sign in to the Azure control panel] and configure the basic details required to run Azure, such as billing and contact information. Alternatively, new users can http://azure.microsoft.com/en-us/pricing/free-trial/[sign up for a free trial] period that includes a $200 credit.
+
+Set up a PowerShell Environment:: Configuring nodes for DSE requires the Azure PowerShell cmdlets and Azure account credentials to be configured in a PowerShell environment. This can either be run on a local workstation, or via an Azure VM. These links provide instructions for setting up the PowerShell environment:
+
+* http://azure.microsoft.com/en-us/documentation/articles/install-configure-powershell/[Install Powershell for Azure]
+
+
+* http://blogs.technet.com/b/askpfeplat/archive/2013/04/14/building-a-vm-in-windows-azure-using-powershell-in-a-few-quick-steps.aspx[Configuring Azure cmdlets in PowerShell]
+
