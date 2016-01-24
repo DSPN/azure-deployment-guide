@@ -58,6 +58,40 @@ Because of this, if you are provisioning a cluster with more than 40 nodes, it i
 
 ==== Multi Data Center
 
+One of the best things about DataStax Enterprise is its ability to continue running even after the loss of one or more data centers.  Azure provides more regions than any other cloud provider, making Azure a great place to deploy DataStax Enterprise.
+
+ VMs deployed in Azure must each be assigned a private IP address. That address belongs to a NIC that belongs to a vnet.  Vnets, in turn belong to a region.  Private IP addresses are not routable across regions by default.  Instead, the network must be configured to route traffic across vnets.
+
+ Azure provides three options to accomplish that:
+
+ * Public IP Addresses
+ * VPN Gateway
+ * Express Route
+
+ For most applications we suggest using public IP addresses.  More detail on each option is given below.
+
+===== Public IP Addresses
+
+Each node in a cluster can be assigned a public IP address.  That DataStax Enterprise cluster can then be configured to communicate using those public IPs.  Traffic between public IPs in Azure is routed over the Azure backbone, with bandwidth in the 10s-100s of Gbps.
+
+Network Security Groups can be configured to prevent outside access to the nodes, ensuring that the public IPs are only used for routing traffic between nodes.
+
+Given the extremely high bandwidth and relatively low cost of this option, we recommend it for the majority of multi-datacenter clusters.  Hybrid (on-prem and cloud) clusters may find Express Route a viable option as well.
+
+===== VPN Gateway
+
+VPN Gateways come in two flavors, a standard gateway and a high performance gateway.  The high performance gateway has a theoretical bandwidth of 200Mbps.  In practice rates in the mid 150Mbps have been observed.  Given the low bandwith we do not typically recommend VPN gateways for DataStax clusters.
+
+Additionally, the setup of VPN gateways is extremely complex.  A gateway must be created in every vnet you wish to connect.  Then uni-directional connections must be created between each gateway.  For a cluster with n datacenters, n*(n-1) connections must be created.
+
+===== Express Route
+
+Express Route requires the creation of gateways and connections as in the VPN Gateway model, however the bandwidth is greater.  Express Route has a theoretical limit of 2Gbps and is expected to increase to 10Gbps in the near future.  We believe that bandwidth is sufficient for many DataStax Enterprise use cases.
+
+Express Route requires the user have an Express Route circuit in place as well.  That has a monthly cost in addition to an other Azure charges.
+
+We recommend Express Route for cases where an on-prem datacenter must be connected to Azure.
+
 ==== Rack Awareness
 
 In DataStax Enterprise replicas should be placed in different racks to ensure that multiple replicas are not lost due to a hardware failure that is confined to a portion of a physical data center.  On Azure this is typically accomplished by configuring GossipingPropertyFileSnitch.
@@ -65,7 +99,6 @@ In DataStax Enterprise replicas should be placed in different racks to ensure th
 To configure the snitch, the corresponding Azure resources must be configured.  We recommend configuring an availability set for the vms in each logical data center you define.  The availability set should have the number of fault domains set to 3 if your number of replicas is 3.  Upgrade domains should be set to 18.
 
 If your number of replicas is 2, then we recommend fault domains equal to 2 and upgrade domains equal to 20.
-
 Azure supports a maximum of 3 fault domains and 20 upgrade domains.  To ensure a sane replica placement strategy, it is advisable to have a number of upgrade domains that is divisible by your number of fault domains.  We recommend the maximum number of upgrade domains within these criteria as that will minimize the number of nodes down at any one time.
 
 You can read more about Azure availability sets [https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-manage-availability/] here.
@@ -75,3 +108,8 @@ With your availability sets created, the next step is to map those to DataStax E
 We are working on automating this process, but that automation is not yet complete.
 
 ==== Cluster Connectivity
+
+The ARM templates currently configure private IPs for every node.  Applications must be deployed within the same vnet as the database to access it.  The cluster can be accessed externally by first sshing into the public IP of the OpsCenter node and then connecting to the private IPs of the cluster nodes by sshing from there.
+
+Public IPs can be assigned to the DataStax Enterprise nodes if access from outside the vent is required.  This is often neccessary if a user wishes to use an application such as DevCenter, Power BI or Tableau with the cluster.
+
