@@ -1,0 +1,115 @@
+=== Deployment Considerations
+
+==== About Microsoft Azure
+
+For detailed information about Microsoft Azure, please visit: https://azure.microsoft.com/
+
+There are some key Azure topics covered here that are helpful to understand before starting a deployment. In particular, the choice of an appropriate machine-type and storage will help ensure successful initial efforts. For more advanced deployments where high-availability is paramount, it’s important to availability sets and multiple regions.
+
+==== Recommended Machine Types
+
+===== Ephemeral Storage
+
+DataStax Enterprise workloads perform best when given a balance of CPU, Memory and low-latency storage.  Most of our work to date has relied on instances with ephemeral storage.  A series instances use a spinning disk for ephemeral storage.  DataStax does not recommend A series machines for any DSE application.
+
+D series, D series v2 and G series machines all use SSD drives for their ephemeral storage.  We find that the following D series machines have a good mix of resources for general DSE applications:
+
+* D4
+* D4 v2
+* D12
+* D12 v2
+* D13
+* D13 v2
+* D14
+* D14 v2
+
+For most production applications we recommend a D14 as it makes use of the entire underlying physical machine and its 800GB ephemeral SSD is well sized for many DSE applications.  A D13 is 1/2 that machine and a D12 1/4.  Using the entire machine avoids resource contention issues.  The D4 is also the entire machine, but its ephemeral disk is too small for many applications.
+
+Smaller D series boxes such as the D1 are great for testing out deployments but we would not recommend them for production use.
+
+G series machines are well suited to memory intensive workloads such as Spark and Solr.  For such workloads the following instances are recommended, though larger D series may suffice as well:
+
+* G4
+* G5
+
+More information on Azure instance types is available here: https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux Note that Linux instances are significantly less expensive than their Windows counterparts.
+
+===== Premium Storage
+
+D and G series machines are also available as DS and GS series boxes.  The DS and GS are physical identical to their D and G brethren, but use part of the ephemeral SSD as a cache for Premium Storage.  In the case of a D14, the 800GB SSD is split into a 224GB ephemeral and a 576GB cache.
+
+Premium Storage is a network attached, SSD based storage.  It comes in three flavors, P10, P20 and P30.  Performance for the drive increases with its size, so P30 is both the largest at 1TB and most performant with 5000IOPS.  Given the marginal cost differential between P10, P20 and P30 we recommend P30 for Premium Storage applications.
+
+We caution against attaching a large number of P30s to a single VM as both performance and rebuild times will suffer.  The closer the size of the attached premium storage is to the size of the host machine's ephemeral cache, the better you performance will be.
+
+We recommend the following machines for Premium Storage based applications:
+
+* DS14
+* GS4
+* GS5
+
+More information on the DS series is available https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-size-specs/#standard-tier-ds-series[here].  You can also read about Premium Storage https://azure.microsoft.com/en-us/documentation/articles/storage-premium-storage-preview-portal/[here].
+
+==== Storage Accounts
+
+Each Azure storage account supports up to 20,000 IOPS.  Every Azure VM requires an OS disk that is tied to a storage account.  These use standard storage, which has a maximum of 500 IOPS.  Because 20,000/500=40, if you attach more than 40 OS disks to a single storage account, the storage account will be over provisioned.  The result will be kernel panics and other low level failures of the OS.
+
+Because of this, if you are provisioning a cluster with more than 40 nodes, it is neccessary to spread the OS disks for those nodes across multiple storage accounts.  The ARM templates DataStax provides do this automatically.
+
+==== Multi Data Center
+
+One of the best things about DataStax Enterprise is its ability to continue running even after the loss of one or more data centers.  Azure provides more regions than any other cloud provider, making Azure a great place to deploy DataStax Enterprise.
+
+VMs deployed in Azure must each be assigned a private IP address. That address belongs to a NIC that belongs to a vnet.  Vnets, in turn belong to a region.  Private IP addresses are not routable across regions by default.  Instead, the network must be configured to route traffic across vnets.
+
+Azure provides three options to accomplish that:
+
+ * Public IP Addresses
+ * VPN Gateway
+ * Express Route
+
+For most applications we suggest using public IP addresses.  More detail on each option is given below.
+
+===== Public IP Addresses
+
+Each node in a cluster can be assigned a public IP address.  That DataStax Enterprise cluster can then be configured to communicate using those public IPs.  Traffic between public IPs in Azure is routed over the Azure backbone, with bandwidth in the 10s-100s of Gbps.
+
+Network Security Groups can be configured to prevent outside access to the nodes, ensuring that the public IPs are only used for routing traffic between nodes.
+
+Given the extremely high bandwidth and relatively low cost of this option, we recommend it for the majority of multi-datacenter clusters.  Hybrid (on-prem and cloud) clusters may find Express Route a viable option as well.
+
+===== VPN Gateway
+
+VPN Gateways come in two flavors, a standard gateway and a high performance gateway.  The high performance gateway has a theoretical bandwidth of 200Mbps.  In practice rates in the mid 150Mbps have been observed.  Given the low bandwith we do not typically recommend VPN gateways for DataStax clusters.
+
+Additionally, the setup of VPN gateways is extremely complex.  A gateway must be created in every vnet you wish to connect.  Then uni-directional connections must be created between each gateway.  For a cluster with n datacenters, n*(n-1) connections must be created.
+
+===== Express Route
+
+Express Route requires the creation of gateways and connections as in the VPN Gateway model, however the bandwidth is greater.  Express Route has a theoretical limit of 2Gbps and is expected to increase to 10Gbps in the near future.  We believe that bandwidth is sufficient for many DataStax Enterprise use cases.
+
+Express Route requires the user have an Express Route circuit in place as well.  That has a monthly cost in addition to an other Azure charges.
+
+We recommend Express Route for cases where an on-prem datacenter must be connected to Azure.
+
+==== Rack Awareness
+
+In DataStax Enterprise replicas should be placed in different racks to ensure that multiple replicas are not lost due to a hardware failure that is confined to a portion of a physical data center.  On Azure this is typically accomplished by configuring GossipingPropertyFileSnitch.
+
+To configure the snitch, the corresponding Azure resources must be configured.  We recommend configuring an availability set for the VMs in each logical data center you define.  The availability set should have the number of fault domains set to 3 if your number of replicas is 3.  Upgrade domains should be set to 18.
+
+If your number of replicas is 2, then we recommend fault domains equal to 2 and upgrade domains equal to 20.
+Azure supports a maximum of 3 fault domains and 20 upgrade domains.  To ensure a sane replica placement strategy, it is advisable to have a number of upgrade domains that is divisible by your number of fault domains.  We recommend the maximum number of upgrade domains within these criteria as that will minimize the number of nodes down at any one time.
+
+You can read more about Azure availability sets https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-manage-availability[here].
+
+With your availability sets created, the next step is to map those to DataStax Enterprise racks.  This can be done by calling the Azure metadata service from each node.  That will return the fault domain and upgrade domain the node belongs to.  That information can then be included in the node's rack configuration file.
+
+We are working on automating this process, but that automation is not yet complete.
+
+==== Cluster Connectivity
+
+The ARM templates currently configure private IPs for every node.  Applications must be deployed within the same vnet as the database to access it.  The cluster can be accessed externally by first sshing into the public IP of the OpsCenter node and then connecting to the private IPs of the cluster nodes by sshing from there.
+
+Public IPs can be assigned to the DataStax Enterprise nodes if access from outside the vent is required.  This is often neccessary if a user wishes to use an application such as DevCenter, Power BI or Tableau with the cluster.
+

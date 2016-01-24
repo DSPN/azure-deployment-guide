@@ -1,7 +1,3 @@
-//:source-highlighter: coderay
-//:coderay-linenums-mode: table
-//:source-highlighter: prettify
-//:prettify-linenums-mode: inline
 :source-highlighter: highlightjs
 :highlightjs-linenums-mode: inline
 :highlightjsdir: http://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.0
@@ -10,29 +6,16 @@
 
 == DataStax Enterprise Deployment Guide for Microsoft Azure Cloud
 
-//:doctype: book
 :sourcedir: ./src/doc
-//Pages that pull in images do so from an unusual parent dir
 :imagesdir: ../../images
 
 include::{sourcedir}/sections/overview.asciidoc[]
 include::{sourcedir}/common/about-datastax.asciidoc[]
-include::{sourcedir}/sections/about-azure.asciidoc[]
 
-//Get nodes up and running
-include::{sourcedir}/sections/deploy-a-cluster.asciidoc[]
-include::{sourcedir}/sections/prep-for-opscenter.asciidoc[]
+include::{sourcedir}/sections/deployment-considerations.asciidoc[]
 
-//Deploy Cluster w/OpsCenter
-include::{sourcedir}/common/opscenter-deploy.asciidoc[]
-include::{sourcedir}/sections/deprovision.asciidoc[]
+include::{sourcedir}/sections/prerequisites.asciidoc[]
+include::{sourcedir}/sections/marketplace.asciidoc[]
+include::{sourcedir}/sections/cli.asciidoc[]
 
-include::{sourcedir}/sections/dse-azure-deployment-considerations.asciidoc[]
-include::{sourcedir}/sections/multiregion-dc-configuration.asciidoc[]
-include::{sourcedir}/sections/multiregion-config-pip.asciidoc[]
-include::{sourcedir}/sections/multiregion-config-vpn.asciidoc[]
-//Grow the cluster
-//include::{sourcedir}/sections/adding-nodes.asciidoc[]
-
-//Last words...
 include::{sourcedir}/sections/conclusion.asciidoc[]

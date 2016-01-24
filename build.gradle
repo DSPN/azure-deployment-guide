@@ -1,23 +1,19 @@
 buildscript {
   repositories {
     jcenter()
-    maven {
-      url 'http://bluepapa32.github.io/maven/'
-    }
-    maven {
-      url 'http://dl.bintray.com/content/aalmiray/asciidoctor'
-    }
+    maven { url 'http://bluepapa32.github.io/maven/' }
+    maven { url 'http://dl.bintray.com/content/aalmiray/asciidoctor' }
   }
   dependencies {
     classpath 'com.bluepapa32.gradle.plugins:gradle-watch-plugin:0.1.1'
-    classpath 'org.kordamp:livereload-gradle-plugin:0.0.1'
+    classpath 'org.kordamp.gradle:livereload-gradle-plugin:0.2.1'
     classpath 'org.asciidoctor:asciidoctor-gradle-plugin:0.7.0'
   }
 }
 
 apply plugin: 'watch'
 apply plugin: 'java'
-apply plugin: 'livereload'
+apply plugin: 'org.kordamp.gradle.livereload'
 apply plugin: 'asciidoctor'
 
 watch {

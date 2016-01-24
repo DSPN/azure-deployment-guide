@@ -1,0 +1,8 @@
+
+=== Deploy Using the Azure CLI
+
+DataStax has built a GitHub repo that has a number of Azure Resource Manager (ARM) templates, including a template that uses VPN Gateways to create a multi datacenter deployment.  Those are available https://github.com/DSPN/azure-resource-manager-dse[here].
+
+The youtube video below gives a detailed walkthrough showing how to deploy a DataStax Enterprise cluster using the Azure CLI.
+
+https://youtu.be/vacp267zLBA[Deploying DataStax with the Azure CLI]
