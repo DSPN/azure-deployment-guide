@@ -60,15 +60,15 @@ Because of this, if you are provisioning a cluster with more than 40 nodes, it i
 
 One of the best things about DataStax Enterprise is its ability to continue running even after the loss of one or more data centers.  Azure provides more regions than any other cloud provider, making Azure a great place to deploy DataStax Enterprise.
 
- VMs deployed in Azure must each be assigned a private IP address. That address belongs to a NIC that belongs to a vnet.  Vnets, in turn belong to a region.  Private IP addresses are not routable across regions by default.  Instead, the network must be configured to route traffic across vnets.
+VMs deployed in Azure must each be assigned a private IP address. That address belongs to a NIC that belongs to a vnet.  Vnets, in turn belong to a region.  Private IP addresses are not routable across regions by default.  Instead, the network must be configured to route traffic across vnets.
 
- Azure provides three options to accomplish that:
+Azure provides three options to accomplish that:
 
  * Public IP Addresses
  * VPN Gateway
  * Express Route
 
- For most applications we suggest using public IP addresses.  More detail on each option is given below.
+For most applications we suggest using public IP addresses.  More detail on each option is given below.
 
 ===== Public IP Addresses
 
@@ -96,7 +96,7 @@ We recommend Express Route for cases where an on-prem datacenter must be connect
 
 In DataStax Enterprise replicas should be placed in different racks to ensure that multiple replicas are not lost due to a hardware failure that is confined to a portion of a physical data center.  On Azure this is typically accomplished by configuring GossipingPropertyFileSnitch.
 
-To configure the snitch, the corresponding Azure resources must be configured.  We recommend configuring an availability set for the vms in each logical data center you define.  The availability set should have the number of fault domains set to 3 if your number of replicas is 3.  Upgrade domains should be set to 18.
+To configure the snitch, the corresponding Azure resources must be configured.  We recommend configuring an availability set for the VMs in each logical data center you define.  The availability set should have the number of fault domains set to 3 if your number of replicas is 3.  Upgrade domains should be set to 18.
 
 If your number of replicas is 2, then we recommend fault domains equal to 2 and upgrade domains equal to 20.
 Azure supports a maximum of 3 fault domains and 20 upgrade domains.  To ensure a sane replica placement strategy, it is advisable to have a number of upgrade domains that is divisible by your number of fault domains.  We recommend the maximum number of upgrade domains within these criteria as that will minimize the number of nodes down at any one time.
