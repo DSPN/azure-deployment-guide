@@ -44,9 +44,9 @@ We caution against attaching a large number of P30s to a single VM as both perfo
 
 We recommend the following machines for Premium Storage based applications:
 
-* D14
-* G4
-* G5
+* DS14
+* GS4
+* GS5
 
 More information on the DS series is available https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-size-specs/#standard-tier-ds-series[here].  You can also read about Premium Storage https://azure.microsoft.com/en-us/documentation/articles/storage-premium-storage-preview-portal/[here].
 
