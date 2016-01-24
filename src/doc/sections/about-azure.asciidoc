@@ -1,29 +1,53 @@
-
 === About Microsoft Azure
 
-Azure is an open and flexible cloud platform that enables you to quickly build, deploy and manage applications across a global network of Microsoft-managed datacenters. You can build applications using any language, tool or framework. And you can integrate your public cloud applications with your existing IT environment.
+For detailed information about Microsoft Azure, please visit: https://azure.microsoft.com/
 
-For more information, visit: https://azure.microsoft.com/en-us/overview/what-is-azure/
-//From: https://azure.microsoft.com/en-us/overview/what-is-azure/
+There are some key Azure topics covered here that are helpful to understand before starting a deployment. In particular, the choice of an appropriate machine-type and storage will help ensure successful initial efforts. For more advanced deployments where high-availability is paramount, it’s important to availability sets and multiple regions.
 
-==== Azure Technical Background
+==== Recommended Machine Types
 
-Azure has some technical conventions that might be unfamiliar to those with a background in other cloud or virtualization systems. It is helpful to understand some of these conventions up front before beginning to deploy clusters. In particular, large DSE clusters will max-out the resource quotas in Azure so it is important to understand how to effectively use the correct types of resources and how to spread out use over multiple resources.
+==== Ephemeral Storage
 
-===== Recommended Instance Types 
+DataStax Enterprise workloads perform best when given a balance of CPU, Memory and low-latency storage.  Most of our work to date has relied on instances with ephemeral storage.  A series instances use a spinning disk for ephemeral storage.  DataStax does not recommend A series machines for any DSE application.
 
-Microsoft Azure virtual machine types come in a wide range of sizes and capabilities. http://msdn.microsoft.com/library/azure/dn197896.aspx[This document] describes the various instance types in detail.
+D series, D series v2 and G series machines all use SSD drives for their ephemeral storage.  We find that the following D series machines have a good mix of resources for general DSE applications:
 
-DataStax recommends using *A7* instance types or higher for optimal performance. These instance types provide larger memory footprints that will help keep hot data in the OS buffer cache. These instances are also optimized to provide the maximum IOPS available. *A4* instances are also capable of utilizing maximum IOPS, but have a much smaller DRAM footprint, and so should be used conservatively for testing or development, or when maximum performance is not critical.
+* D4
+* D4 v2
+* D12
+* D12 v2
+* D13
+* D13 v2
+* D14
+* D14 v2
 
-===== Azure Port Forwarding
+For most production applications we recommend a D14 as it makes use of the entire underlying physical machine and its 800GB ephemeral SSD is well sized for many DSE applications.  A D13 is 1/2 that machine and a D12 1/4.  Using the entire machine avoids resource contention issues.  The D4 is also the entire machine, but its ephemeral disk is too small for many applications.
 
-Azure does not expose a public IP address for every single instance. Instead, services use port-forwarding to expose access via a single domain name. For the purposes of running DSE, the primary port of interest is ssh. The scripts in this document make heavy use of ssh to configure the cluster, so it helps to understand this mechanism. As each instance is started, the local ssh port (port 22) is forwarded to a monotonically increasing external port number that is publicly exposed, starting at 10001 and increasing to as high as 10050 for each Cloud Service. More information on this mechanism is available at http://azure.microsoft.com/en-us/documentation/articles/virtual-machines-set-up-endpoints/[this link].
+Smaller D series boxes such as the D1 are great for testing out deployments but we would not recommend them for production use.
 
-===== Storage Accounts
+G series machines are well suited to memory intensive workloads such as Spark and Solr.  For such workloads the following instances are recommended, though D series may suffice as well:
+
+* G4
+* G5
+
+More information on Azure instance types is available here: https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux Note that Linux instances are significantly less expensive than their Windows counterparts.
+
+==== Premium Storage
+
+D and G series machines are also available as DS and GS series boxes.  The DS and GS are physical identical to their D and G brethern, but use part of the ephemeral SSD as a cache for Premium Storage.  In the case of a D14, the 800GB SSD is split into a 224GB ephemeral and a 576GB cache.
+
+Premium Storage is a network attached, SSD based storage.  It comes in three flavors, P10, P20 and P30.  Performance for the drive increases with its size, so P30 is both the largest at 1TB and most performant with 5000IOPS.  Given the marginal cost differential between P10, P20 and P30 we recommend P30 for Premium Storage applications.
+
+We caution against attaching a large number of P30s to a single VM as both performance and rebuild times will suffer.  The closer the size of the attached premium storage is to the size of the host machine's ephemeral cache, the better you performance will be.
+
+We recommend the following machines for Premium Storage based applications:
+
+* D14
+* G4
+* G5
+
+More information on the DS series is available here[https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-size-specs/#standard-tier-ds-series]  You can also read about Premium Storage https://azure.microsoft.com/en-us/documentation/articles/storage-premium-storage-preview-portal/[here].
+
+==== Storage
 
 Azure divides disk resources among _storage accounts_ under an individual user account. There can be many storage accounts in an individual user account. Storage accounts are a mechanism to to manage IO resources, more information is available at http://windowsitpro.com/azure/maximize-azure-storage-performance[this link]. For the purposes of running DSE, it is important to note that a single storage account should not should not be shared between more than two nodes if DSE is configured like the examples in the scripts in this document. This document configures each node to have 16 disks. Each disk has a limit of 500 IOPS. This yields 8000 IOPS when configured in RAID-0. So, two nodes will hit 16,000 IOPS and three would exceed the limit.
-
-===== Affinity Groups
-
-To keep latency low between nodes and between nodes and storage, be sure to define an affinity group for the cluster. See http://social.technet.microsoft.com/wiki/contents/articles/7916.importance-of-windows-azure-affinity-groups.aspx[this document] for more information.
