@@ -13,18 +13,7 @@ include::{sourcedir}/sections/overview.asciidoc[]
 include::{sourcedir}/common/about-datastax.asciidoc[]
 include::{sourcedir}/sections/about-azure.asciidoc[]
 
-//Get nodes up and running
-include::{sourcedir}/sections/deploy-a-cluster.asciidoc[]
-include::{sourcedir}/sections/prep-for-opscenter.asciidoc[]
-
-//Deploy Cluster w/OpsCenter
-include::{sourcedir}/common/opscenter-deploy.asciidoc[]
-#include::{sourcedir}/sections/deprovision.asciidoc[]
-
 include::{sourcedir}/sections/dse-azure-deployment-considerations.asciidoc[]
-include::{sourcedir}/sections/multiregion-dc-configuration.asciidoc[]
-include::{sourcedir}/sections/multiregion-config-pip.asciidoc[]
-include::{sourcedir}/sections/multiregion-config-vpn.asciidoc[]
+include::{sourcedir}/sections/deploy-a-cluster.asciidoc[]
 
-//Last words...
 include::{sourcedir}/sections/conclusion.asciidoc[]
