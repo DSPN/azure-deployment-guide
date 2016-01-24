@@ -50,6 +50,28 @@ We recommend the following machines for Premium Storage based applications:
 
 More information on the DS series is available here[https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-size-specs/#standard-tier-ds-series]  You can also read about Premium Storage https://azure.microsoft.com/en-us/documentation/articles/storage-premium-storage-preview-portal/[here].
 
-==== Storage
+==== Storage Accounts
 
-Azure divides disk resources among _storage accounts_ under an individual user account. There can be many storage accounts in an individual user account. Storage accounts are a mechanism to to manage IO resources, more information is available at http://windowsitpro.com/azure/maximize-azure-storage-performance[this link]. For the purposes of running DSE, it is important to note that a single storage account should not should not be shared between more than two nodes if DSE is configured like the examples in the scripts in this document. This document configures each node to have 16 disks. Each disk has a limit of 500 IOPS. This yields 8000 IOPS when configured in RAID-0. So, two nodes will hit 16,000 IOPS and three would exceed the limit.
+Each Azure storage account supports up to 20,000 IOPS.  Every Azure VM requires an OS disk that is tied to a storage account.  These use standard storage, which has a maximum of 500 IOPS.  Because 20,000/500=40, if you attach more than 40 OS disks to a single storage account, the storage account will be over provisioned.  The result will be kernel panics and other low level failures of the OS.
+
+Because of this, if you are provisioning a cluster with more than 40 nodes, it is neccessary to spread the OS disks for those nodes across multiple storage accounts.  The ARM templates DataStax provides do this automatically.
+
+==== Multi Data Center
+
+==== Rack Awareness
+
+In DataStax Enterprise replicas should be placed in different racks to ensure that multiple replicas are not lost due to a hardware failure that is confined to a portion of a physical data center.  On Azure this is typically accomplished by configuring GossipingPropertyFileSnitch.
+
+To configure the snitch, the corresponding Azure resources must be configured.  We recommend configuring an availability set for the vms in each logical data center you define.  The availability set should have the number of fault domains set to 3 if your number of replicas is 3.  Upgrade domains should be set to 18.
+
+If your number of replicas is 2, then we recommend fault domains equal to 2 and upgrade domains equal to 20.
+
+Azure supports a maximum of 3 fault domains and 20 upgrade domains.  To ensure a sane replica placement strategy, it is advisable to have a number of upgrade domains that is divisible by your number of fault domains.  We recommend the maximum number of upgrade domains within these criteria as that will minimize the number of nodes down at any one time.
+
+You can read more about Azure availability sets [https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-manage-availability/] here.
+
+With your availability sets created, the next step is to map those to DataStax Enterprise racks.  This can be done by calling the Azure metadata service from each node.  That will return the fault domain and upgrade domain the node belongs to.  That information can then be included in the node's rack configuration file.
+
+We are working on automating this process, but that automation is not yet complete.
+
+==== Cluster Connectivity
