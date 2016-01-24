@@ -36,7 +36,7 @@ More information on Azure instance types is available here: https://azure.micros
 
 ===== Premium Storage
 
-D and G series machines are also available as DS and GS series boxes.  The DS and GS are physical identical to their D and G brethern, but use part of the ephemeral SSD as a cache for Premium Storage.  In the case of a D14, the 800GB SSD is split into a 224GB ephemeral and a 576GB cache.
+D and G series machines are also available as DS and GS series boxes.  The DS and GS are physical identical to their D and G brethren, but use part of the ephemeral SSD as a cache for Premium Storage.  In the case of a D14, the 800GB SSD is split into a 224GB ephemeral and a 576GB cache.
 
 Premium Storage is a network attached, SSD based storage.  It comes in three flavors, P10, P20 and P30.  Performance for the drive increases with its size, so P30 is both the largest at 1TB and most performant with 5000IOPS.  Given the marginal cost differential between P10, P20 and P30 we recommend P30 for Premium Storage applications.
 
