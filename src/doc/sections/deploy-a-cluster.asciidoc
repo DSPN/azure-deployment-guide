@@ -46,9 +46,9 @@ This next step is the bulk of the work that needs to be performed. This PowerShe
 
 .Provision with PowerShell
 [source,powershell]
-----
-include::../../../src/scripts/ProvisionCluster.ps1[]
-----
+#----
+#include::../../../src/scripts/ProvisionCluster.ps1[]
+#----
 
 Depending on the number of nodes being provisioned, it can take some time for all of the nodes to spin up. Sometimes hiccups can occur during the provisioning process and a node or two won't have been fully configured correctly. For example, it is possible for nodes to appear to be online, but it isn't possible to log in to them. Keep an eye out for these kinds of anomalies in the next step and reprovision the problematic nodes if this occurs.
 
@@ -56,23 +56,23 @@ The next step is to configure sudoers so that the rest of the scripts can be exe
 
 .Setup sudoers
 [source,bash]
-----
-include::../../../src/scripts/setup_sudoers.sh[]
-----
+#----
+#include::../../../src/scripts/setup_sudoers.sh[]
+#----
 
 Next, the OS and disks will need to be configured. The setup_diskandos.sh script needs to be copied to each of the nodes and executed. Customize this script if disk configuration was changed in the provisioning script. Also provided is a convenience script that copies, chmods and executes the script on each node. So, to execute this step, customize the scripts and then: `./run_script_on_all_nodes.sh setup_diskandos.sh`
 
 .Disk & OS Configuration
 [source,bash]
-----
-include::../../../src/scripts/setup_diskandos.sh[]
-----
+#----
+#include::../../../src/scripts/setup_diskandos.sh[]
+#----
 
 .Execution Helper
 [source,bash]
-----
-include::../../../src/scripts/run_script_on_all_nodes.sh[]
-----
+#----
+#include::../../../src/scripts/run_script_on_all_nodes.sh[]
+#----
 
 
 Finally, before OpsCenter can provision the cluster, Java will have to be installed on all the nodes. This script can be used upload and install a Java RPM. Prior to running this step, download a stable RPM release of Java 7 from http://www.oracle.com/technetwork/java/javase/downloads/index.html[Oracle's Java download site]
@@ -81,8 +81,8 @@ Then customize and run this script to install & configure Java & JNA.
 
 .Setup Java
 [source,bash]
-----
-include::../../../src/scripts/setup_java.sh[]
-----
+#----
+#include::../../../src/scripts/setup_java.sh[]
+#----
 
 Now the cluster is prepared for OpsCenter to deploy DSE.

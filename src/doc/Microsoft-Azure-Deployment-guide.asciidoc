@@ -25,7 +25,7 @@ include::{sourcedir}/sections/prep-for-opscenter.asciidoc[]
 
 //Deploy Cluster w/OpsCenter
 include::{sourcedir}/common/opscenter-deploy.asciidoc[]
-include::{sourcedir}/sections/deprovision.asciidoc[]
+#include::{sourcedir}/sections/deprovision.asciidoc[]
 
 include::{sourcedir}/sections/dse-azure-deployment-considerations.asciidoc[]
 include::{sourcedir}/sections/multiregion-dc-configuration.asciidoc[]
