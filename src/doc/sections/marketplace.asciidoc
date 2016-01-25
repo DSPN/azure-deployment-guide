@@ -3,4 +3,6 @@
 
 DataStax has a number of offers available on the Azure Marketplace today.  This are all bring your own license (BYOL) offers and support deployment of a single datacenter.  The youtube video below gives a detailed walkthrough showing how to deploy a DataStax Enterprise cluster using the Azure Marketplace offers.
 
+video::tmXdSEMjwCE[youtube]
+
 https://youtu.be/tmXdSEMjwCE[Deploying DataStax with Azure Marketplace]
