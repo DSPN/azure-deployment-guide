@@ -4,7 +4,7 @@
 :highlightjs-theme: foundation
 :prewrap!:
 
-== DataStax Enterprise Deployment Guide for Microsoft Azure Cloud
+== DataStax Enterprise Deployment Guide for Microsoft Azure
 
 :sourcedir: ./src/doc
 :imagesdir: ../../images
