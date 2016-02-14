@@ -1,3 +1,0 @@
-[submodule "src/doc/common"]
-	path = src/doc/common
-	url = https://github.com/DSPN/cloud-dg-common.git
