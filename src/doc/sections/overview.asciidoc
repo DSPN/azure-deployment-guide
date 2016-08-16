@@ -1,6 +1,0 @@
-
-=== Overview
-
-This document describes how to use templates to deploy DataStax Enterprise (DSE) on Microsoft Azure.  Pull requests for any of the https://github.com/DSPN/azure-resource-manager-dse[templates] used here, or for any part of this https://github.com/DSPN/cloud-dg-azure[document] are welcome.
-
-Slides that give a high level overview of the joint work Microsoft and DataStax have accomplished to date is available https://docs.google.com/presentation/d/1lS8UhK5pVeEIg1RUoOFPbdd9JsfJ47Xoh451lI6HW9Y/edit?usp=sharing[here].
