@@ -1,3 +1,3 @@
 # Deploying via Azure Marketplace
 
-asd
+Coming soon...
