@@ -173,19 +173,19 @@ Azure attempts to spread nodes across FDs and UDs evenly.  An example of how tha
 
 |      | FD 1 | FD 2 | FD 3 |
 |------|------|------|------|
-| UD 1 | 1    |	4	 | 6    |
-| UD 2 | 7	  | 2	 | 5    |
-| UD 3 | 10	  | 8	 | 3    |
-| UD 4 | 12	  | 11	 | 9    |
+| UD 1 | 1    |	5	 | 9    |
+| UD 2 | 10	  | 2	 | 6    |
+| UD 3 | 7	  | 11	 | 3    |
+| UD 4 | 4	  | 8	 | 12    |
 
 Given this node placement, a desireable rack placement is:
 
 |      | FD 1 | FD 2 | FD 3 |
 |------|------|------|------|
-| UD 1 | 1    |	3    | 2    |
-| UD 2 | 2	  | 1	 | 3    |
-| UD 3 | 3	  | 2	 | 1    |
-| UD 4 | 1	  | 3	 | 2    |
+| UD 1 | 1    |	2    | 3    |
+| UD 2 | 3	  | 1	 | 2    |
+| UD 3 | 2	  | 3	 | 1    |
+| UD 4 | 1	  | 2	 | 3    |
 
 To map to racks, we need to create a function that maps the FD and UD of a node to a rack.  Replicas should be placed in different FDs and UDs to ensure that a UD or FD failure does not cause more than one replica to be lost.  Additionally, the function needs to distribute uniformly across FD and UD to ensure that racks have the same number of nodes.
 
