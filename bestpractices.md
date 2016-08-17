@@ -91,7 +91,7 @@ Premium storage accounts are limited by attached size of the drives rather than 
 
 | Premium Storage Disk Type | P10               | P20               | P30               |
 |---------------------------|-------------------|-------------------|-------------------|
-| *Disk size*                 | 128 GiB           | 512 GiB           | 1024 GiB          |
+| Disk size                 | 128 GiB           | 512 GiB           | 1024 GiB          |
 | IOPS per disk	            | 500               | 2300	            | 5000              |
 | Throughput per disk	    | 100 MB per second	| 150 MB per second	| 200 MB per second |
 
@@ -171,18 +171,22 @@ With your availability sets created, the next step is to map those to DataStax E
 
 Azure attempts to spread nodes across FDs and UDs evenly.  An example of how that is done is given in the table below.
 
-x	FD 1	FD 2	FD 3
-UD 1	1	4	6
-UD 2	7	2	5
-UD 3	10	8	3
-UD 4	12	11	9
+|      | FD 1 | FD 2 | FD 3 |
+|------|------|------|------|
+| UD 1 | 1    |	4	 | 6    |
+| UD 2 | 7	  | 2	 | 5    |
+| UD 3 | 10	  | 8	 | 3    |
+| UD 4 | 12	  | 11	 | 9    |
+
 Given this node placement, a desireable rack placement is:
 
-x	FD 1	FD 2	FD 3
-UD 1	1	3	2
-UD 2	2	1	3
-UD 3	3	2	1
-UD 4	1	3	2
+|      | FD 1 | FD 2 | FD 3 |
+|------|------|------|------|
+| UD 1 | 1    |	3    | 2    |
+| UD 2 | 2	  | 1	 | 3    |
+| UD 3 | 3	  | 2	 | 1    |
+| UD 4 | 1	  | 3	 | 2    |
+
 To map to racks, we need to create a function that maps the FD and UD of a node to a rack.  Replicas should be placed in different FDs and UDs to ensure that a UD or FD failure does not cause more than one replica to be lost.  Additionally, the function needs to distribute uniformly across FD and UD to ensure that racks have the same number of nodes.
 
 One function that meets these requirements is f(UD,FD) = ???
@@ -192,7 +196,3 @@ The idea of creating an Azure specific snitch has been proposed.  We are not cur
 ### Cluster Connectivity
 
 The ARM templates currently configure public IPs for every node.  Any node can be accessed via those public IPs, or within a vnet via their private IP.  This IP can be used to access the node via a wide array of tools include DevCenter, OpsCenter, cqlsh and nodetool.  Care should be taken the secure the deployment to your specifications.
-
-## Post Deployment
-
-### Security
