@@ -181,3 +181,7 @@ The idea of creating an Azure specific snitch has been proposed.  We are not cur
 ### Cluster Connectivity
 
 The ARM templates currently configure public IPs for every node.  Any node can be accessed via those public IPs, or within a vnet via their private IP.  This IP can be used to access the node via a wide array of tools include DevCenter, OpsCenter, cqlsh and nodetool.  Care should be taken the secure the deployment to your specifications.
+
+## Post Deployment
+
+### Security
