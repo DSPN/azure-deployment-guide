@@ -12,13 +12,13 @@ We recommend all deployments use Azure Resource Manager (ARM).  This is Microsof
 
 If you have an existing Azure deployment that already makes use of ASM, it is possible to create new resources in ARM.  We recommend this rather than adding to an existing ASM implementation.
 
-More information is available here.
+More information is available [here](https://azure.microsoft.com/en-us/documentation/articles/resource-manager-deployment-model/).
 
 ## Compute
 
 ### Recommended Machine Types
 
-The minimal recommended config for DataStax Enterprise is 2 cores, 8GB RAM and 80GB of disk.  Those recommendations are given here.
+The minimal recommended config for DataStax Enterprise is 2 cores, 8GB RAM and 80GB of disk.  Those recommendations are given [here](http://docs.datastax.com/en/latest-dse/datastax_enterprise/install/installDEBdse.html).
 
 ### D, F and G Series
 
@@ -26,23 +26,29 @@ Most of our work on Azure to date has relied on instances with ephemeral storage
 
 A series instances use a spinning disk for ephemeral storage. DataStax does not recommend A series machines for any DSE application.
 
-D series, D series v2 and G series machines all use SSD drives for their ephemeral storage. We understand Microsoft is phasing out the D series v1 machines, so do not recommend them for new deployments.  We find that the following D series v2 machines have a good mix of resources for general DSE applications:
+D, D v2 and G series machines all use SSD drives for their ephemeral storage.  We understand Microsoft is phasing out the D series v1 machines, so do not recommend them for new deployments.
 
-D4 v2
-D5 v2
-D13 v2
-D14 v2
-For most production applications we recommend a D14 v2 as it makes use of the entire underlying physical machine and its 800GB ephemeral SSD is well sized for many DSE applications.  
+We find that the following D series v2 machines have a good mix of resources for general DSE applications:
+
+* D4 v2
+* D5 v2
+* D13 v2
+* D14 v2
+
+For most production applications we recommend a D14 v2 as it makes use of the entire underlying physical machine and its 800GB ephemeral SSD is well sized for many DSE applications.
 
 A D13 is physically 1/2 of a D14 and a D12 1/4. Using the entire machine avoids resource contention issues. Like the D14, the D5 is also the entire machine, but relative prices typically make the D14 more appealing.
 
 Smaller D series boxes such as the D2 v2 are great for testing out deployments but we would not recommend them for production use.
 
-G series machines are well suited to memory intensive workloads such as Spark and Solr. For such workloads the following instances are recommended, though larger D series may suffice as well:
+F series machines have ephemeral SSD drives, but those drives are relatively small.  Given the small size we do not recommend deploying DSE on an F series machine as it will not be a cost effective solution.
 
-G4
-G5
-More information on Azure instance types is available here: https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux Note that Linux instances are significantly less expensive than their Windows counterparts.
+G series machines are well suited to memory intensive workloads such as Graph, Spark and Solr. For such workloads the following instances are recommended, though larger D series may suffice as well.  We recommend the following G series machines:
+
+* G4
+* G5
+
+More information on Azure instance types is available (here)[https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux].  Note that Linux instances are significantly less expensive than their Windows counterparts.
 
 ### DS, FS and GS Series
 
@@ -50,26 +56,28 @@ D , F and G series machines are also available as DS, FS and GS series boxes. Th
 
 Premium Storage is a network attached, SSD based storage. It comes in three flavors, P10, P20 and P30. Performance for the drive increases with its size, so P30 is both the largest at 1TB and most performant with 5000IOPS. Given the marginal cost differential between P10, P20 and P30 we recommend P30 for all Premium Storage applications.
 
-We caution against attaching a large number of P30s to a single VM as both performance and rebuild times will suffer. The closer the size of the attached premium storage is to the size of the host machine’s ephemeral cache, the better your performance will be.  
+We caution against attaching a large number of P30s to a single VM as both performance and rebuild times will suffer. The closer the size of the attached premium storage is to the size of the host machine’s ephemeral cache, the better your performance will be.
 
 We recommend the following machines for Premium Storage based applications:
 
-DS4 v2
-DS5 v2
-DS13 v2
-DS14 v2
-GS4
-GS5
+* DS4 v2
+* DS5 v2
+* DS13 v2
+* DS14 v2
+* FS8
+* FS16
+* GS4
+* GS5
 
 ## Storage
 
 ### Storage Accounts
 
-Storage accounts come in two flavors: standard and premium.  Standard storage is network attached and based on spinning magnetic disks.  Premium storage is network attached and based on SSD.  Premium storage can only be used as the file system with the DS and GS machines.  We have heard that it's possible to attached premium storage to other machines but only as a blob store, not as a filesystem.
+Storage accounts come in two flavors: standard and premium.  Standard storage is network attached and based on spinning magnetic disks.  Premium storage is network attached and based on SSD.  Premium storage can only be used as the file system with the S series machines.  We have heard that it's possible to attached premium storage to other machines but only as a blob store, not as a filesystem.
 
 #### Standard Storage
 
-Standard storage can be attached to any Azure machine.  We recommend using Standard Storage for OS disks.  We strongly recommend against using standard storage as the data disk for any DataStax application.
+Standard storage can be attached to any Azure machine.  We recommend using Standard Storage for OS disks.  We strongly recommend against using standard storage as the data disk for any DSE application.
 
 Each standard storage account supports up to 20,000 IOPS. A standard storage disk has a maximum of 500 IOPS.  20,000 IOPS / 500 IOPS = 50, so if you attach more than 40 disks to a single storage account, the storage account will be over provisioned. The result will be kernel panics and other low level failures of the OS.
 
@@ -81,11 +89,13 @@ If using D or G series machines only standard disks and the local ephemeral disk
 
 Premium storage accounts are limited by attached size of the drives rather than IOPS.  A premium storage account can have up to 35TB of attached storage.  Premium storage comes in three sizes, with additional size giving additional performance as shown in the chart below from here.  The number of drives that can be attached to a given machine depend on its size.  For instance, a DS14 can have up to 32 P30 drives attached.  More information on that is available here.
 
-Premium Storage Disk Type	P10	P20	P30
-Disk size	128 GiB	512 GiB	1024 GiB (1 TB)
-IOPS per disk	500	2300	5000
-Throughput per disk	100 MB per second	150 MB per second	200 MB per second
-If using a DS or GS machine, either premium or standard storage can be used for the OS disk.  From discussions with Microsoft we understand Premium Storage is both more reliable and more performant.  If you chose to use Premium Storage for the OS disk, a P10 drive is sufficient for OS disk applications.  We recommend P30 disks for all data disk applications.  Multiple P30 disks can be attached to a single machine in a RAID 0 configuration to improve I/O performance.  
+| Premium Storage Disk Type | P10               | P20               | P30               |
+|---------------------------|-------------------|-------------------|-------------------|
+| Disk size                 | 128 GiB           | 512 GiB           | 1024 GiB          |
+| IOPS per disk	            | 500               | 2300	            | 5000              |
+| Throughput per disk	    | 100 MB per second	| 150 MB per second	| 200 MB per second |
+
+If using an S series machine, either premium or standard storage can be used for the OS disk.  From discussions with Microsoft we understand Premium Storage is both more reliable and more performant.  If you chose to use Premium Storage for the OS disk, a P10 drive is sufficient for OS disk applications.  We recommend P30 disks for all data disk applications.  Multiple P30 disks can be attached to a single machine in a RAID 0 configuration to improve I/O performance.  
 
 That said, thought should be given to node density.  1TB of data per node is typically a sweet spot in DataStax performance.  Configurations such as 2xP30 with only 500GB used on each drive and the remainder reserved for compaction with give a good balance of node density, rebuild time and compaction space.  Similarly 4xP30 with 250GB on each drive will perform well.
 
@@ -107,9 +117,10 @@ VMs deployed in Azure must each be assigned a private IP address. That address b
 
 Azure provides three options to accomplish that:
 
-Public IP Addresses
-VPN Gateway
-Express Route
+* Public IP Addresses
+* VPN Gateway
+* Express Route
+
 For most applications we suggest using public IP addresses. More detail on each option is given below.
 
 ### Public IP Addresses
