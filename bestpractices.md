@@ -109,8 +109,6 @@ If you are using more than one Premium Storage disk, either RAID-0 or JBOD can b
 
 ## Network
 
-### Multi Data Center
-
 One of the best things about DataStax Enterprise is its ability to continue running even after the loss of one or more data centers. Azure provides more regions than any other cloud provider, making Azure a great place to deploy DataStax Enterprise.
 
 VMs deployed in Azure must each be assigned a private IP address. That address belongs to a NIC that belongs to a vnet. Vnets, in turn belong to a region. Private IP addresses are not routable across regions by default. Instead, the network must be configured to route traffic across vnets.
