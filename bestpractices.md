@@ -48,7 +48,7 @@ G series machines are well suited to memory intensive workloads such as Graph, S
 * G4
 * G5
 
-More information on Azure instance types is available (here)[https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux].  Note that Linux instances are significantly less expensive than their Windows counterparts.
+More information on Azure instance types is available [here](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux).  Note that Linux instances are significantly less expensive than their Windows counterparts.
 
 ### DS, FS and GS Series
 
