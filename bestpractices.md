@@ -87,7 +87,7 @@ If using D or G series machines only standard disks and the local ephemeral disk
 
 ### Premium Storage
 
-Premium storage accounts are limited by attached size of the drives rather than IOPS.  A premium storage account can have up to 35TB of attached storage.  Premium storage comes in three sizes, with additional size giving additional performance as shown in the chart below from here.  The number of drives that can be attached to a given machine depend on its size.  For instance, a DS14 can have up to 32 P30 drives attached.  More information on that is available here.
+Premium storage accounts are limited by attached size of the drives rather than IOPS.  A premium storage account can have up to 35TB of attached storage.  Premium storage comes in three sizes, with additional size giving additional performance as shown in the chart below from here.  The number of drives that can be attached to a given machine depend on its size.  For instance, a DS14 can have up to 32 P30 drives attached.  More information on that is available [here](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/#standard-tier-ds-series).
 
 | Premium Storage Disk Type | P10               | P20               | P30               |
 |---------------------------|-------------------|-------------------|-------------------|
