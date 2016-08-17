@@ -20,7 +20,7 @@ More information is available [here](https://azure.microsoft.com/en-us/documenta
 
 The minimal recommended config for DataStax Enterprise is 2 cores, 8GB RAM and 80GB of disk.  Those recommendations are given [here](http://docs.datastax.com/en/latest-dse/datastax_enterprise/install/installDEBdse.html).
 
-### D, F and G Series
+### D and G Series
 
 Most of our work on Azure to date has relied on instances with ephemeral storage.
 
