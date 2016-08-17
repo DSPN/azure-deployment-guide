@@ -163,7 +163,7 @@ Azure supports a maximum of 3 fault domains and 20 upgrade domains.  We recommen
 
 It's possible to set the number of fault domains to 1 or 2.  Doing that will result in lower availability that setting the number of fault domains to 3.  This is because a fault domain failure will result in a loss of either 100% or 50% of your nodes.  Given that, a fault domains should always be set to 3.
 
-You can read more about Azure availability sets here.
+You can read more about Azure availability sets [here](https://azure.microsoft.com/en-us/documentation/articles/resource-manager-deployment-model/).
 
 With your availability sets created, the next step is to map those to DataStax Enterprise racks. This can be done by calling the Azure metadata service from each node. That will return the fault domain and upgrade domain the node belongs to. That information can then be included in the node’s rack configuration file.
 
