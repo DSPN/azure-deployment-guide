@@ -176,7 +176,7 @@ Azure attempts to spread nodes across FDs and UDs evenly.  An example of how tha
 | UD 1 | 1    |	5	 | 9    |
 | UD 2 | 10	  | 2	 | 6    |
 | UD 3 | 7	  | 11	 | 3    |
-| UD 4 | 4	  | 8	 | 12    |
+| UD 4 | 4	  | 8	 | 12   |
 
 Given this node placement, a desireable rack placement is:
 
@@ -191,7 +191,7 @@ To map to racks, we need to create a function that maps the FD and UD of a node 
 
 One function that meets these requirements is f(UD,FD) = ???
 
-The idea of creating an Azure specific snitch has been proposed.  We are not currently pursuing that as GossipingPropertyFileSnitch is better understood and more widely used than any cloud specific snitch.  In fact, we typically recommend GossipingPropertyFileSnitch rather than the Google or Amazon specific snitches while operating in those clouds.
+The idea of creating an Azure specific snitch has been proposed.  We are not currently pursuing that as GossipingPropertyFileSnitch (GPFS) is better understood and more widely used than any cloud specific snitch.  In fact, we typically recommend GossipingPropertyFileSnitch rather than the Google or Amazon specific snitches while operating in those clouds.  GPFS also has the advantage of supporting hybrid cloud deployments.
 
 ### Cluster Connectivity
 
