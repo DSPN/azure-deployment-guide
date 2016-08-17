@@ -187,8 +187,6 @@ Given this node placement, a desireable rack placement is:
 
 To map to racks, we need to create a function that maps the FD and UD of a node to a rack.  Replicas should be placed in different FDs and UDs to ensure that a UD or FD failure does not cause more than one replica to be lost.  Additionally, the function needs to distribute uniformly across FD and UD to ensure that racks have the same number of nodes.
 
-One function that meets these requirements is f(UD,FD) = ???
-
 The idea of creating an Azure specific snitch has been proposed.  We are not currently pursuing that as GossipingPropertyFileSnitch (GPFS) is better understood and more widely used than any cloud specific snitch.  In fact, we typically recommend GossipingPropertyFileSnitch rather than the Google or Amazon specific snitches while operating in those clouds.  GPFS also has the advantage of supporting hybrid cloud deployments.
 
 ### Cluster Connectivity
