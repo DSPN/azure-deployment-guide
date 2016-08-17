@@ -91,7 +91,7 @@ Premium storage accounts are limited by attached size of the drives rather than 
 
 | Premium Storage Disk Type | P10               | P20               | P30               |
 |---------------------------|-------------------|-------------------|-------------------|
-| Disk size                 | 128 GiB           | 512 GiB           | 1024 GiB          |
+| *Disk size*                 | 128 GiB           | 512 GiB           | 1024 GiB          |
 | IOPS per disk	            | 500               | 2300	            | 5000              |
 | Throughput per disk	    | 100 MB per second	| 150 MB per second	| 200 MB per second |
 
