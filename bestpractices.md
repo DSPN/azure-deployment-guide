@@ -159,7 +159,7 @@ In DataStax Enterprise replicas should be placed in different racks to ensure th
 
 To configure the snitch, the corresponding Azure resources must be configured. We recommend configuring an availability set for the VMs in each logical data center you define. The availability set should have the number of fault domains set to 3 and upgrade domains should be set to 20.
 
-Azure supports a maximum of 3 fault domains and 20 upgrade domains.  We recommend the maximum number of upgrade domains as that will minimize the number of nodes down at any one time, hence the recommended setting of 20 upgrade domains.
+Azure supports a maximum of 3 fault domains and 20 upgrade domains.  We recommend the maximum of 20 upgrade domains as that will minimize the number of nodes down at any one time.
 
 It's possible to set the number of fault domains to 1 or 2.  Doing that will result in lower availability that setting the number of fault domains to 3.  This is because a fault domain failure will result in a loss of either 100% or 50% of your nodes.  Given that, a fault domains should always be set to 3.
 
@@ -181,11 +181,9 @@ Given this node placement, a desireable rack placement is:
 |      | FD 1 | FD 2 | FD 3 |
 |------|------|------|------|
 | UD 1 | 1    |	2    | 3    |
-| UD 2 | 3	  | 1	 | 2    |
-| UD 3 | 2	  | 3	 | 1    |
+| UD 2 | 1	  | 2	 | 3    |
+| UD 3 | 1	  | 2	 | 3    |
 | UD 4 | 1	  | 2	 | 3    |
-
-To map to racks, we need to create a function that maps the FD and UD of a node to a rack.  Replicas should be placed in different FDs and UDs to ensure that a UD or FD failure does not cause more than one replica to be lost.  Additionally, the function needs to distribute uniformly across FD and UD to ensure that racks have the same number of nodes.
 
 The idea of creating an Azure specific snitch has been proposed.  We are not currently pursuing that as GossipingPropertyFileSnitch (GPFS) is better understood and more widely used than any cloud specific snitch.  In fact, we typically recommend GossipingPropertyFileSnitch rather than the Google or Amazon specific snitches while operating in those clouds.  GPFS also has the advantage of supporting hybrid cloud deployments.
 
