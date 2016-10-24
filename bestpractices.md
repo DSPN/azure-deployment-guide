@@ -137,6 +137,8 @@ VPN Gateways come in two flavors, a standard gateway and a high performance gate
 
 Additionally, the setup of VPN gateways is extremely complex. A gateway must be created in every vnet you wish to connect. Then uni-directional connections must be created between each gateway. For a cluster with n datacenters, n*(n-1) connections must be created.  Deployment times for a VPN gateway can be as much as an hour.  Connections typically take only a few minutes to establish once the gateways are in place.
 
+With any VPN gateway deployment it is necessary to provision high performance VPN gateways.  See https://azure.microsoft.com/en-us/documentation/articles/vpn-gateway-about-vpngateways/ for more information on the different types of Azure VPN gateways.
+
 Each VPN gateway is made up of two Azure machines deployed as a fault tolerant pair.  
 
 ### Express Route
