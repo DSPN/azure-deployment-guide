@@ -20,13 +20,13 @@ More information is available [here](https://azure.microsoft.com/en-us/documenta
 
 The minimal recommended config for DataStax Enterprise is 2 cores, 8GB RAM and 80GB of disk.  Those recommendations are given [here](http://docs.datastax.com/en/latest-dse/datastax_enterprise/install/installDEBdse.html).
 
-### D and G Series
+### D, G and H Series
 
 Most of our work on Azure to date has relied on instances with ephemeral storage.
 
 A series instances use a spinning disk for ephemeral storage. DataStax does not recommend A series machines for any DSE application.
 
-D, D v2 and G series machines all use SSD drives for their ephemeral storage.  We understand Microsoft is phasing out the D series v1 machines, so do not recommend them for new deployments.
+D, D v2, G and H series machines all use SSD drives for their ephemeral storage.  We understand Microsoft is phasing out the D series v1 machines, so do not recommend them for new deployments.
 
 We find that the following D series v2 machines have a good mix of resources for general DSE applications:
 
@@ -45,8 +45,17 @@ F series machines have ephemeral SSD drives, but those drives are relatively sma
 
 G series machines are well suited to memory intensive workloads such as Graph, Spark and Solr. For such workloads the following instances are recommended, though larger D series may suffice as well.  We recommend the following G series machines:
 
+* G3
 * G4
-* G5
+
+H series machines have relatively large ephemeral SSD drives.  H series machines can be very cost effective for deployments where higher data density is desirable.  We recommend the following H series machines:
+
+* H8
+* H8m
+* H16
+* H16m
+* H16r
+* H16mr
 
 More information on Azure instance types is available [here](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux).  Note that Linux instances are significantly less expensive than their Windows counterparts.
 
@@ -66,8 +75,8 @@ We recommend the following machines for Premium Storage based applications:
 * DS14 v2
 * FS8
 * FS16
+* GS3
 * GS4
-* GS5
 
 ## Storage
 
@@ -93,7 +102,7 @@ Premium storage accounts are limited by attached size of the drives rather than 
 |---------------------------|-------------------|-------------------|-------------------|
 | Disk size                 | 128 GB            | 512 GB            | 1024 GB           |
 | IOPS per disk	            | 500               | 2300	            | 5000              |
-| Throughput per disk	    | 100 MB per second	| 150 MB per second	| 200 MB per second |
+| Throughput per disk	      | 100 MB per second	| 150 MB per second	| 200 MB per second |
 
 If using an S series machine, either premium or standard storage can be used for the OS disk.  From discussions with Microsoft we understand Premium Storage is both more reliable and more performant.  If you chose to use Premium Storage for the OS disk, a P10 drive is sufficient for OS disk applications.  We recommend P30 disks for all data disk applications.  Multiple P30 disks can be attached to a single machine in a RAID 0 configuration to improve I/O performance.  
 
@@ -125,7 +134,7 @@ For most applications we suggest using public IP addresses. More detail on each 
 
 Each node in a cluster can be assigned a public IP address. That DataStax Enterprise cluster can then be configured to communicate using those public IPs. Traffic between public IPs in Azure is routed over the Azure backbone, with bandwidth in the 10-100s of Gbps.  As such, bandwidth is theoretically limited by the bandwidth cap on the virtual machine.  In general bandwidth caps are higher the larger the virtual machine.  In testing, we have seen throughput ranging from 2-6 Gbps on a machine with an 8 Gbps bandwidth cap.
 
-Public IPs can be either dynamic or static.  Static IPs are reserved indefinitely.  A dynamic IP is reserved when attached to a machine.  The dynamic IP remains assigned indefinitely through reboots and even hardware failures of the machine.  It will only be reassigned if the machine is stopped or deleted.  We understand the name "dynamic" gives some reservations, but given their characteristics, dynamci public IPs are suitable for almost all DataStax applications.
+Public IPs can be either dynamic or static.  Static IPs are reserved indefinitely.  A dynamic IP is reserved when attached to a machine.  The dynamic IP remains assigned indefinitely through reboots and even hardware failures of the machine.  It will only be reassigned if the machine is stopped or deleted.  We understand the name "dynamic" gives some reservations, but given their characteristics, dynamic public IPs are suitable for almost all DataStax applications.
 
 Network Security Groups can be configured to prevent outside access to the nodes, ensuring that the public IPs are only used for routing traffic between nodes.
 
@@ -133,7 +142,7 @@ Given the extremely high bandwidth and relatively low cost of this option, we re
 
 ### VPN Gateway
 
-VPN Gateways come in two flavors, a standard gateway and a high performance gateway. The high performance gateway has a theoretical bandwidth of 200Mbps. In practice rates in the mid 150Mbps have been observed. Given the low bandwith we typically do not recommend VPN gateways for DataStax clusters.
+VPN Gateways come in two flavors, a standard gateway and a high performance gateway. The high performance gateway has a theoretical bandwidth of 200Mbps. In practice rates in the mid 150Mbps have been observed. Given the low bandwidth we typically do not recommend VPN gateways for DataStax clusters.
 
 The setup of VPN gateways is extremely complex. A gateway must be created in every vnet you wish to connect. Then uni-directional connections must be created between each gateway. For a cluster with n datacenters, n*(n-1) connections must be created.  Deployment times for a VPN gateway can be as much as an hour.  Connections typically take only a few minutes to establish once the gateways are in place.
 
@@ -173,19 +182,19 @@ Azure attempts to spread nodes across FDs and UDs evenly.  An example of how tha
 
 |      | FD 1 | FD 2 | FD 3 |
 |------|------|------|------|
-| UD 1 | 1    |	5	 | 9    |
-| UD 2 | 10	  | 2	 | 6    |
+| UD 1 | 1    |	5	   | 9    |
+| UD 2 | 10	  | 2	   | 6    |
 | UD 3 | 7	  | 11	 | 3    |
-| UD 4 | 4	  | 8	 | 12   |
+| UD 4 | 4	  | 8	   | 12   |
 
-Given this node placement, a desireable rack placement is:
+Given this node placement, a desirable rack placement is:
 
 |      | FD 1 | FD 2 | FD 3 |
 |------|------|------|------|
 | UD 1 | 1    |	2    | 3    |
-| UD 2 | 1	  | 2	 | 3    |
-| UD 3 | 1	  | 2	 | 3    |
-| UD 4 | 1	  | 2	 | 3    |
+| UD 2 | 1	  | 2	   | 3    |
+| UD 3 | 1	  | 2	   | 3    |
+| UD 4 | 1	  | 2	   | 3    |
 
 The idea of creating an Azure specific snitch has been proposed.  We are not currently pursuing that as GossipingPropertyFileSnitch (GPFS) is better understood and more widely used than any cloud specific snitch.  In fact, we typically recommend GossipingPropertyFileSnitch rather than the Google or Amazon specific snitches while operating in those clouds.  GPFS also has the advantage of supporting hybrid cloud deployments.
 
