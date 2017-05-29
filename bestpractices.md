@@ -130,6 +130,10 @@ Azure provides three options to accomplish that:
 
 For most applications we suggest using public IP addresses. More detail on each option is given below.
 
+When using any of the options in Azure we suggest lowering the tcp_keepalive value to 120 seconds.  This is due to Azure gateways having a 240 second timeout on all idle tcp streams.  To accomplish this in /etc/sysctl.conf add the following line:
+
+sysctl -w net.ipv4.tcp_keepalive_time=120
+
 ### Public IP Addresses
 
 Each node in a cluster can be assigned a public IP address. That DataStax Enterprise cluster can then be configured to communicate using those public IPs. Traffic between public IPs in Azure is routed over the Azure backbone, with bandwidth in the 10-100s of Gbps.  As such, bandwidth is theoretically limited by the bandwidth cap on the virtual machine.  In general bandwidth caps are higher the larger the virtual machine.  In testing, we have seen throughput ranging from 2-6 Gbps on a machine with an 8 Gbps bandwidth cap.
