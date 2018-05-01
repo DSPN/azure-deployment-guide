@@ -8,11 +8,11 @@ Most of the failures we see with Azure deployments are the result of insufficien
 
 One way to debug deployment issues is through the Azure portal. After logging in at https://portal.azure.com, find the resources group associated with the deployment. Once you click on that resource group you will see a screen like the one below.
 
-![Azure portal showing resource group](imgs/portal_rg.png)
+![Azure portal showing resource group](imgs/portal-rg.png)
 
 From here click on the “Activity log” to view successful and failed resources in this deployment.
 
-![Azure portal showing resource group events](imgs/portal_rg_events.png)
+![Azure portal showing resource group events](imgs/portal-rg-events.png)
 
 From the command line, you can find similar information at the command line using a command like this: `az group deployment show -g resouceGroupName -n mainTemplate --debug`
 
