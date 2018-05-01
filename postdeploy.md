@@ -2,21 +2,39 @@
 
 ## Debugging Azure Deployments
 
-In the event a deployment doesn't complete successfully, there are a number of steps you can take to understand the problem.  This video describes where various logs can be found.
+In the event a deployment doesn't complete successfully, there are steps you can take to understand the problem. Some notes and debugging techniques are described below.
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/5HXbRcG49Eg/0.jpg)](http://www.youtube.com/watch?v=5HXbRcG49Eg "Debugging Azure Deployments")
+Most of the failures we see with Azure deployments are the result of insufficient quotas in the Azure subscription. Limited cores are the primary offender. Default subscriptions have a limit of 20 cores and trial subscriptions have much less. If you want to raise the limit or quota above the “Default Limit”, open an online customer support request at no charge. Learn more about this [here](https://docs.microsoft.com/en-us/azure/azure-supportability/resource-manager-core-quotas-request). With trial subscriptions, you can upgrade to a Pay-As-You-Go subscription which will increase quota.
+
+One way to debug deployment issues is through the Azure portal. After logging in at https://portal.azure.com, find the resources group associated with the deployment. Once you click on that resource group you will see a screen like the one below.
+
+![Azure portal showing resource group](imgs/portal_rg.png)
+
+From here click on the “Activity log” to view successful and failed resources in this deployment.
+
+![Azure portal showing resource group events](imgs/portal_rg_events.png)
+
+From the command line, you can find similar information at the command line using a command like this: `az group deployment show -g resouceGroupName -n mainTemplate --debug`
+
+Rarely errors happen in the ARM template extensions that install Datastax. To debug these issues, users can ssh into a VM and look at various files. One file that shows this data is under `/var/lib/waagent`. Under this directory are sub-directories that will contain files from the extension running. A directory like `Microsoft.OSTCExtensions.CustomScriptForLinux-1.5.2.2/download/0` will contain files named `stdout` and `errout` which should give indication of the errors.
+
+Usually the best course of action when a deployment fails is to delete the azure resource group and deploy again. Please contact the Datastax at partner-architecture@datastax.com when errors occur.
 
 ## Next Steps
 
-Once you've deployed a cluster on Azure, there are a number of places you can go.  This video covers what to do next.  If you're not yet familiar with DataStax Enterprise and Cassandra, the courses at https://academy.datastax.com/ may be helpful.
+Once you've deployed a cluster on Azure, there are some security next steps that may be useful as well as some videos to help with your development on this cluster.
 
-[![IMAGE ALT TEXT](http://img.youtube.com/vi/1vSzA5kslG4/0.jpg)](http://www.youtube.com/watch?v=1vSzA5kslG4 "Debugging Azure Deployments")
+### Datastax Academy
+Datastax Academy is the place to start on your learning path. Once you have registered and have an account, look into these video links to get started.
 
-## Security
+* [Data Model and CQL: CQL DDL](https://academy.datastax.com/units/data-model-and-cql-cql-ddl)
 
-We recommend the following steps to secure your cluster:
-* Set up network security groups
-* Turn on authentication for OpsCenter
-* Turn on SSL for OpsCenter
-* Turn on authentication for DSE nodes
-* Turn on SSL for DSE nodes
+* [Traversing graph data: graph traversal steps](https://academy.datastax.com/units/traversing-graph-data-graph-traversal-steps)
+
+* [Spark SQL: Spark SQL basics ](https://academy.datastax.com/units/spark-sql-spark-sql-basics)
+
+
+
+### Security
+You may want to change the Azure network security groups to further lock down the environment. A good overview of network security can be found [here](https://docs.microsoft.com/en-us/azure/virtual-network/security-overview)
+On the Datastax side, SSL between nodes can be enabled and is cover in this [documentation](https://docs.datastax.com/en/dse/6.0/dse-admin/datastax_enterprise/security/secInternodeSsl.html).
