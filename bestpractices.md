@@ -142,7 +142,8 @@ Public IPs can be either dynamic or static.  Static IPs are reserved indefinitel
 
 Network Security Groups can be configured to prevent outside access to the nodes, ensuring that the public IPs are only used for routing traffic between nodes.
 
-Given the extremely high bandwidth and relatively low cost of this option, we recommend it for the majority of multi-datacenter clusters.
+Public IPs are an option for development environments. For production environments, vnet peering is the best practice.
+(https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview).
 
 ### VPN Gateway
 
