@@ -2,53 +2,43 @@
 
 This section of the deployment guide covers recommendations for compute, storage, network and more.
 
-## General
 
 ### Azure Resource Manager
 
-Microsoft is currently on the second iteration of Azure.  The first iteration is now called classic deployment.  This is also known as Azure Service Management (ASM) and makes use of the web interface at https://manage.windowsazure.com/  We do not recommend classic deployment.  Neither Microsoft nor DataStax are investing resources in it.
+Azure Resource Manager is the deployment and management service for Azure. It provides a management layer that enables you to create, update, and delete resources in your Azure subscription. You use management features, like access control, locks, and tags, to secure and organize your resources after deployment.
 
-We recommend all deployments use Azure Resource Manager (ARM).  This is Microsoft's latest deployment mechanism.  It makes use of the Azure Portal at http://portal.azure.com  ARM features numerous enhancements over ASM.  These range from parallel deployments rather than series (cutting deployment times from days/weeks to minutes/hours), availability sets (for better high availability and rack awareness) to a restructuring of the fundamental deployment model.
+We recommend all deployments use Azure Resource Manager (ARM). This is Microsoft's latest deployment mechanism. It numerous features over other deployment mechanisms that range from a consistent management layer to parallel deployments to availability sets (for better high availability and rack awareness) to a restructuring of the fundamental deployment model.
 
-If you have an existing Azure deployment that already makes use of ASM, it is possible to create new resources in ARM.  We recommend this rather than adding to an existing ASM implementation.
+Primary Benefits of ARM are listed below:
+* Manage your infrastructure through declarative templates rather than scripts.
+* Deploy, manage, and monitor all the resources for your solution as a group, rather than handling these resources individually.
+* Redeploy your solution throughout the development lifecycle and have confidence your resources are deployed in a consistent state.
+* Define the dependencies between resources so they're deployed in the correct order.
+* Apply access control to all services in your resource group because Role-Based Access Control (RBAC) is natively integrated into the management platform.
+* Apply tags to resources to logically organize all the resources in your subscription.
+* Clarify your organization's billing by viewing costs for a group of resources sharing the same tag.
 
-More information is available [here](https://azure.microsoft.com/en-us/documentation/articles/resource-manager-deployment-model/).
+
 
 ## Compute
 
 ### Recommended Machine Types
 
-The minimal recommended config for DataStax Enterprise is 2 cores, 8GB RAM and 80GB of disk.  Those recommendations are given [here](http://docs.datastax.com/en/latest-dse/datastax_enterprise/install/installDEBdse.html).
+The minimal recommended config for DataStax Enterprise is 4 cores, 8GB RAM and 80GB of disk.  Those recommendations are given [here](http://docs.datastax.com/en/latest-dse/datastax_enterprise/install/installDEBdse.html).
 
-### D, G and H Series
+### D, F and H Series
 
-Most of our work on Azure to date has relied on instances with ephemeral storage.
+In the past many of the DataStax workloads on Azure have relied on instances with ephemeral storage but now more customers use Azure VMs that support managed disks and premium storage.
 
-A series instances use a spinning disk for ephemeral storage. DataStax does not recommend A series machines for any DSE application.
+We find that the following D series v3 machines have a good mix of resources for general DSE applications:
 
-D, D v2, G and H series machines all use SSD drives for their ephemeral storage.  We understand Microsoft is phasing out the D series v1 machines, so do not recommend them for new deployments.
+ * Standard_D4s_v3,
+ * Standard_D8s_v3,
+ * Standard_D16s_v3
+ * Standard_D32s_v3
 
-We find that the following D series v2 machines have a good mix of resources for general DSE applications:
 
-* D4 v2
-* D5 v2
-* D13 v2
-* D14 v2
-
-For most production applications we recommend a D14 v2 as it makes use of the entire underlying physical machine and its 800GB ephemeral SSD is well sized for many DSE applications.
-
-A D13 is physically 1/2 of a D14 and a D12 1/4. Using the entire machine avoids resource contention issues. Like the D14, the D5 is also the entire machine, but relative prices typically make the D14 more appealing.
-
-Smaller D series boxes such as the D2 v2 are great for testing out deployments but we would not recommend them for production use.
-
-F series machines have ephemeral SSD drives, but those drives are relatively small.  Given the small size we do not recommend deploying DSE on an F series machine as it will not be a cost effective solution.
-
-G series machines are well suited to memory intensive workloads such as Graph, Spark and Solr. For such workloads the following instances are recommended, though larger D series may suffice as well.  We recommend the following G series machines:
-
-* G3
-* G4
-
-H series machines have relatively large ephemeral SSD drives.  H series machines can be very cost effective for deployments where higher data density is desirable.  We recommend the following H series machines:
+The HB-series VMs are optimized for HPC applications driven by memory bandwidth like DSE graph and solr. HC VMs feature 44 Intel Xeon Platinum 8168 processor cores, 8 GB of RAM per CPU core, no hyperthreading, and up to 4 Managed Disks. The Intel Xeon Platinum platform supports Intel’s rich ecosystem of software tools and features an all-cores clock speed of 3.4 GHz for most workloads. Some suitable for DSE are:
 
 * H8
 * H8m
@@ -57,64 +47,35 @@ H series machines have relatively large ephemeral SSD drives.  H series machines
 * H16r
 * H16mr
 
-More information on Azure instance types is available [here](https://azure.microsoft.com/en-us/pricing/details/virtual-machines/#Linux).  Note that Linux instances are significantly less expensive than their Windows counterparts.
+F-series VMs feature a higher CPU-to-memory ratio for analytics workloads like DSE Spark. They are equipped with 2 GB RAM and 16 GB of local solid state drive (SSD) per CPU core, and are optimized for compute intensive workloads. The Fsv2-series features 2 GiB RAM and 8 GB of local temporary storage (SSD) per vCPU. The Fsv2-series is hyper-threaded and based on the 2.7 GHz Intel Xeon® Platinum 8168 (SkyLake) processor, which can achieve clock speeds as high as 3.7 GHz with the Intel Turbo Boost Technology 2.0. Some suitable for DSE are:
 
-### DS, FS and GS Series
+* Standard_F8
+* Standard_F16
 
-D , F and G series machines are also available as DS, FS and GS series boxes. The S boxes are physical identical to their non-S brethren, but use part of the ephemeral SSD as a cache for Premium Storage. In the case of a DS14, the 800GB SSD is split into a 224GB ephemeral and a 576GB cache.
 
-Premium Storage is a network attached, SSD based storage. It comes in three flavors, P10, P20 and P30. Performance for the drive increases with its size, so P30 is both the largest at 1TB and most performant with 5000IOPS. Given the marginal cost differential between P10, P20 and P30 we recommend P30 for all Premium Storage applications.
 
-We caution against attaching a large number of P30s to a single VM as both performance and rebuild times will suffer. The closer the size of the attached premium storage is to the size of the host machine’s ephemeral cache, the better your performance will be.
 
-We recommend the following machines for Premium Storage based applications:
+## Disk Types
 
-* DS4 v2
-* DS5 v2
-* DS13 v2
-* DS14 v2
-* FS8
-* FS16
-* GS3
-* GS4
+The following table provides a comparison of ultra disks, premium solid-state-drives (SSD), standard SSD, and standard hard disk drives (HDD) for managed disks to help you decide what to use.
 
-## Storage
+![](./azure-disk-types.png)
 
-### Storage Accounts
+### Azure Premium Storage
 
-Storage accounts come in two flavors: standard and premium.  Standard storage is network attached and based on spinning magnetic disks.  Premium storage is network attached and based on SSD.  Premium storage can only be used as the file system with the S series machines.  We have heard that it's possible to attached premium storage to other machines but only as a blob store, not as a filesystem.
+Azure premium SSDs deliver high-performance and low-latency disk support for virtual machines (VMs) with input/output (IO)-intensive workloads. To take advantage of the speed and performance of premium storage disks, you can migrate existing VM disks to Premium SSDs. Premium SSDs are suitable for mission-critical production applications. Premium SSDs can only be used with VM series that are premium storage-compatible.	
 
-#### Standard Storage
+Premium Storage is used by most DSE customers today.	P30s and P40s are common		
 
-Standard storage can be attached to any Azure machine.  We recommend using Standard Storage for OS disks.  We strongly recommend against using standard storage as the data disk for any DSE application.
+1TB of data per node is typically a sweet spot in DataStax performance. Configurations such as 2xP30 or 1xP40 on each drive and the remainder reserved for compaction with give a good balance of node density, rebuild time and compaction space. Similarly 4xP30 with 250GB on each drive will perform well.
 
-Each standard storage account supports up to 20,000 IOPS. A standard storage disk has a maximum of 500 IOPS.  20,000 IOPS / 500 IOPS = 50, so if you attach more than 40 disks to a single storage account, the storage account will be over provisioned. The result will be kernel panics and other low level failures of the OS.
+We advise against configurations where large amounts of data (for instance 10TB) is stored on each node. This will lead to long rebuild times and compromised availability.
 
-If using D or G series machines only standard disks and the local ephemeral disks are available.  In that case we recommend using the standard disk for the OS disk and the ephemeral disk at the data disk.  For D and G series machines it typically makes sense to share storage accounts across machines as only one drive is attached to the machine and managing that layout is relatively simple.
+To simplify management of storage accounts and dependencies between nodes, we recommend a premium storage account per node when using Premium Storage. Azure has a 100 storage account per subscription quota by default on EA accounts. This can be raised by contacting Azure support.
 
-40 machines require 40 distinct OS disks and one standard storage account.  41 machines would require two standard storage accounts as implied by the IOPS arithmetic above.
+### JBOD vs Raid
+* Raid 0 is recommended over JBOD 
 
-### Premium Storage
-
-Premium storage accounts are limited by attached size of the drives rather than IOPS.  A premium storage account can have up to 35TB of attached storage.  Premium storage comes in three sizes, with additional size giving additional performance as shown in the chart below from here.  The number of drives that can be attached to a given machine depend on its size.  For instance, a DS14 can have up to 32 P30 drives attached.  More information on that is available [here](https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-windows-sizes/#standard-tier-ds-series).
-
-| Premium Storage Disk Type | P10               | P20               | P30               |
-|---------------------------|-------------------|-------------------|-------------------|
-| Disk size                 | 128 GB            | 512 GB            | 1024 GB           |
-| IOPS per disk	            | 500               | 2300	            | 5000              |
-| Throughput per disk	      | 100 MB per second	| 150 MB per second	| 200 MB per second |
-
-If using an S series machine, either premium or standard storage can be used for the OS disk.  From discussions with Microsoft we understand Premium Storage is both more reliable and more performant.  If you chose to use Premium Storage for the OS disk, a P10 drive is sufficient for OS disk applications.  We recommend P30 disks for all data disk applications.  Multiple P30 disks can be attached to a single machine in a RAID 0 configuration to improve I/O performance.  
-
-That said, thought should be given to node density.  1TB of data per node is typically a sweet spot in DataStax performance.  Configurations such as 2xP30 with only 500GB used on each drive and the remainder reserved for compaction with give a good balance of node density, rebuild time and compaction space.  Similarly 4xP30 with 250GB on each drive will perform well.
-
-We advise against configurations where large amounts of data (for instance 10TB) is stored on each node.  This will lead to long rebuild times and compromised availability.
-
-To simplify management of storage accounts and dependencies between nodes, we recommend a premium storage account per node when using Premium Storage.  Azure has a 100 storage account per subscription quota by default on EA accounts.  This can be raised by contacting Azure support.
-
-Performance on premium storage is banded into 50ms windows.  A little arithmetic shows that: 1 sec / 50 ms = 20 windows/second.  5000IOPS/sec / 20 windows/second = 250 IOPS/window.  IOPS beyond what a window can support are queued.
-
-If you are using more than one Premium Storage disk, either RAID-0 or JBOD can be used.  We recommend RAID-0 for now, though expect JBOD to become preferred as some changes are made to DataStax Enterprise.
 
 ## Network
 
@@ -126,83 +87,79 @@ Azure provides three options to accomplish that:
 
 * Public IP Addresses
 * VPN Gateway
-* Express Route
+* VNET Peering
 
-For most applications we suggest using public IP addresses. More detail on each option is given below.
+For most cross region DataStax deployments we suggest using VNET Peering. More details on each option is given below.
 
-When using any of the options in Azure we suggest lowering the tcp_keepalive value to 120 seconds.  This is due to Azure gateways having a 240 second timeout on all idle tcp streams.  To accomplish this in /etc/sysctl.conf add the following line:
+When using any of the options in Azure we suggest lowering the tcp_keepalive value to 120 seconds. This is due to Azure gateways having a 240 second timeout on all idle tcp streams. To accomplish this in /etc/sysctl.conf add the following line:
 
 sysctl -w net.ipv4.tcp_keepalive_time=120
 
 ### Public IP Addresses
+Each node in a cluster can be assigned a public IP address. That DataStax Enterprise cluster can then be configured to communicate using those public IPs. Traffic destined for Azure services with public IP addresses can be kept within the Azure backbone network. Bandwidth is limited by the bandwidth cap on the virtual machine. In general bandwidth caps are higher the larger the virtual machine. In testing, we have seen throughput ranging from 2-6 Gbps on a machine with an 8 Gbps bandwidth cap.
 
-Each node in a cluster can be assigned a public IP address. That DataStax Enterprise cluster can then be configured to communicate using those public IPs. Traffic between public IPs in Azure is routed over the Azure backbone, with bandwidth in the 10-100s of Gbps.  As such, bandwidth is theoretically limited by the bandwidth cap on the virtual machine.  In general bandwidth caps are higher the larger the virtual machine.  In testing, we have seen throughput ranging from 2-6 Gbps on a machine with an 8 Gbps bandwidth cap.
-
-Public IPs can be either dynamic or static.  Static IPs are reserved indefinitely.  A dynamic IP is reserved when attached to a machine.  The dynamic IP remains assigned indefinitely through reboots and even hardware failures of the machine.  It will only be reassigned if the machine is stopped or deleted.  We understand the name "dynamic" gives some reservations, but given their characteristics, dynamic public IPs are suitable for almost all DataStax applications.
+Public IPs can be either dynamic or static. Static IPs are reserved indefinitely. A dynamic IP is reserved when attached to a machine. The dynamic IP remains assigned indefinitely through reboots and even hardware failures of the machine. It will only be reassigned if the machine is stopped or deleted. 
 
 Network Security Groups can be configured to prevent outside access to the nodes, ensuring that the public IPs are only used for routing traffic between nodes.
 
-Public IPs are an option for development environments. For production environments, vnet peering for cross region communication is the best practice.
-(https://docs.microsoft.com/en-us/azure/virtual-network/virtual-network-peering-overview).
+Public IPs are an option for development environments. For production environments VNET Peering for cross region communication is the best practice. (see section below).
 
 ### VPN Gateway
+A VPN gateway is a specific type of virtual network gateway that is used to send encrypted traffic between an Azure virtual network and an on-premises location over the public Internet. You can also use a VPN gateway to send encrypted traffic between Azure virtual networks over the Microsoft network. Each virtual network can have only one VPN gateway. However, you can create multiple connections to the same VPN gateway. When you create multiple connections to the same VPN gateway, all VPN tunnels share the available gateway bandwidth.
 
-VPN Gateways come in two flavors, a standard gateway and a high performance gateway. The high performance gateway has a theoretical bandwidth of 200Mbps. In practice rates in the mid 150Mbps have been observed. Given the low bandwidth we typically do not recommend VPN gateways for DataStax clusters.
+VPN Gateways come in a few flavors, a standard gateway and a high performance gateway. The high performance gateway has a theoretical bandwidth of 200Mbps. In practice rates in the mid 150Mbps have been observed. Given the low bandwidth we typically do not recommend VPN gateways for DataStax clusters.
 
-The setup of VPN gateways is extremely complex. A gateway must be created in every vnet you wish to connect. Then uni-directional connections must be created between each gateway. For a cluster with n datacenters, n*(n-1) connections must be created.  Deployment times for a VPN gateway can be as much as an hour.  Connections typically take only a few minutes to establish once the gateways are in place.
+The setup of VPN gateways is somewhat complex. A gateway must be created in every vnet you wish to connect. Then uni-directional connections must be created between each gateway. For a cluster with n datacenters, n*(n-1) connections must be created. Deployment times for a VPN gateway can be as much as an hour. Connections typically take only a few minutes to establish once the gateways are in place.
 
-Each VPN gateway is made up of two Azure machines deployed as a fault tolerant pair.  
+Each VPN gateway is made up of two Azure machines deployed as a fault tolerant pair.
 
-If you must use VPN gateways, use the high performance ones.  More information on those is available [here](https://azure.microsoft.com/en-us/documentation/articles/vpn-gateway-about-vpngateways/).
+If you must use VPN gateways, use the high performance ones. 
 
-### Express Route
+### VNET Peering
+Virtual network peering enables you to seamlessly connect Azure virtual networks. Once peered, the virtual networks appear as one, for connectivity purposes. The traffic between virtual machines in the peered virtual networks is routed through the Microsoft backbone infrastructure, much like traffic is routed between virtual machines in the same virtual network, through private IP addresses only
 
-Express Route is a leased circuit.  Microsoft partners with vendors including CenturyLink and Equinix to provide Express Route.  Express Route requires the creation of gateways and connections as in the VPN Gateway model, however the maximum bandwidth is greater. Express Route bandwidth ranges from 50Mbps to 10Gbps.
+Azure supports:
 
-Express Route requires the user have an Express Route circuit in place as well. That has a monthly cost in addition to an other Azure charges.  The cost varies depending on the bandwidth.  Information on that is available at https://azure.microsoft.com/en-us/pricing/details/expressroute/
+* VNet peering - connecting VNets within the same Azure region
+* Global VNet peering - connecting VNets across Azure regions
 
-We recommend Express Route for cases where an on-prem datacenter must be connected to Azure.
+The benefits of using virtual network peering, whether local or global, include:
 
-We have serious reservations about using Express Route in a pure cloud multi-dc scenario.  Express Route requires a circuit that has a specific geopgraphic location.  Suppose that you have two data centers, Azure East and Azure West, with a circuit in Kansas City.  All traffic between your two data centers will route through Kansas City.  In that case, the latency hit of the extra hop will likely be acceptable.  However, suppose you now add datacenters in London and Berlin.  In this case, all traffic between London and Berlin will now be routed through Kansas City.  In this case, there is a clear advantage to using public IPs.
+* Network traffic between peered virtual networks is private. Traffic between the virtual networks is kept on the Microsoft backbone network. No public Internet, gateways, or encryption is required in the communication between the virtual networks.
+* A low-latency, high-bandwidth connection between resources in different virtual networks.
+* The ability for resources in one virtual network to communicate with resources in a different virtual network, once the virtual networks are peered.
+* The ability to transfer data across Azure subscriptions, deployment models, and across Azure regions.
+* The ability to peer virtual networks created through the Azure Resource Manager or to peer one virtual network created through Resource Manager to a virtual network created through the classic deployment model. To learn more about Azure deployment models, see Understand Azure deployment models.
+* No downtime to resources in either virtual network when creating the peering, or after the peering is created.
 
-The fastest Express Route link available is 10 Gbps.  That is the entire link and all nodes in the cluster as well as any other applications deployed that use the same Express Route circuit will all contend for that bandwidth.  Contrast that with the public IP scenario where each node has its own dedicated public IP for communication.
 
-Additionally, DataStax is based on a true peer to peer architecture.  Funneling that architecture through gateways based on a fault tolerant gateway pair mitigates some advantages of that peer to peer architecture.
-
-### Rack Awareness
-
+Rack Awareness
 In DataStax Enterprise replicas should be placed in different racks to ensure that multiple replicas are not lost due to a hardware failure that is confined to a portion of a physical data center. On Azure this is typically accomplished by configuring GossipingPropertyFileSnitch.
 
-To configure the snitch, the corresponding Azure resources must be configured. We recommend configuring an availability set for the VMs in each logical data center you define. The availability set should have the number of fault domains set to 3 and upgrade domains should be set to 20.
+To configure the snitch, the corresponding Azure resources must be configured. We recommend configuring an availability set for the VMs in each logical data center you define. 
 
-Azure supports a maximum of 3 fault domains and 20 upgrade domains.  We recommend the maximum of 20 upgrade domains as that will minimize the number of nodes down at any one time.
+An Availability Set is a logical grouping capability for isolating VM resources from each other when they're deployed. Azure makes sure that the VMs you place within an Availability Set run across multiple physical servers, compute racks, storage units, and network switches. If a hardware or software failure happens, only a subset of your VMs are impacted and your overall solution stays operational. Availability Sets are essential for building reliable cloud solutions.
 
-It's possible to set the number of fault domains to 1 or 2.  Doing that will result in lower availability that setting the number of fault domains to 3.  This is because a fault domain failure will result in a loss of either 100% or 50% of your nodes.  Given that, a fault domains should always be set to 3.
+The availability set should have the number of fault domains set to 3 and upgrade domains should be set to 20.
 
-You can read more about Azure availability sets [here](https://azure.microsoft.com/en-us/documentation/articles/resource-manager-deployment-model/).
+Azure supports a maximum of 3 fault domains and 20 upgrade domains. We recommend the maximum of 20 upgrade domains as that will minimize the number of nodes down at any one time.
 
-With your availability sets created, the next step is to map those to DataStax Enterprise racks. This can be done by calling the Azure metadata service from each node. That will return the fault domain and upgrade domain the node belongs to. That information can then be included in the node’s rack configuration file.
+Azure attempts to spread nodes across FDs and UDs evenly. 
 
-Azure attempts to spread nodes across FDs and UDs evenly.  An example of how that is done is given in the table below.
 
-|      | FD 1 | FD 2 | FD 3 |
-|------|------|------|------|
-| UD 1 | 1    |	5	   | 9    |
-| UD 2 | 10	  | 2	   | 6    |
-| UD 3 | 7	  | 11	 | 3    |
-| UD 4 | 4	  | 8	   | 12   |
-
-Given this node placement, a desirable rack placement is:
-
-|      | FD 1 | FD 2 | FD 3 |
-|------|------|------|------|
-| UD 1 | 1    |	2    | 3    |
-| UD 2 | 1	  | 2	   | 3    |
-| UD 3 | 1	  | 2	   | 3    |
-| UD 4 | 1	  | 2	   | 3    |
-
-The idea of creating an Azure specific snitch has been proposed.  We are not currently pursuing that as GossipingPropertyFileSnitch (GPFS) is better understood and more widely used than any cloud specific snitch.  In fact, we typically recommend GossipingPropertyFileSnitch rather than the Google or Amazon specific snitches while operating in those clouds.  GPFS also has the advantage of supporting hybrid cloud deployments.
 
 ### Cluster Connectivity
 
 The ARM templates currently configure public IPs for every node.  Any node can be accessed via those public IPs, or within a vnet via their private IP.  This IP can be used to access the node via a wide array of tools include DevCenter, OpsCenter, cqlsh and nodetool.  Care should be taken the secure the deployment to your specifications.
+
+### Azure AD
+Azure AD does not support the Lightweight Directory Access Protocol (LDAP) protocol or Secure LDAP directly. However, it's possible to enable Azure AD Domain Services (Azure AD DS) instance on your Azure AD tenant with properly configured network security groups through Azure Networking to achieve LDAP connectivity. For more information, see https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-faq and https://docs.microsoft.com/azure/active-directory-domain-services/active-directory-ds-admin-guide-configure-secure-ldap. Hence, Azure AD DS may work as another standard LDAP v3 implementation.
+
+### Azure VM DSE Settings
+
+Recommended production settings can be found here (https://docs.datastax.com/en/dse/6.7/dse-dev/datastax_enterprise/config/configRecommendedSettings.html)
+Notes from Azure installations
+read_ahead
+Refer to https://access.redhat.com/solutions/4378581 (may require RedHat subscription to view the solution blog) on how to persist read_ahead setting to survive across reboots for your disks on RHEL VM instances (for e.g. RHEL 7.6 Maipo).
+There is also a discussion here at https://www.linuxquestions.org/questions/linux-newbie-8/centos-7-2-etc-rc-local-replaced-4175571550/#post5496077 that talks about enabling rc.local service
+
