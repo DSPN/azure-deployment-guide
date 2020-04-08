@@ -55,6 +55,22 @@ You can also run "cqlsh" and describe the keyspaces:
 
 ![](./imgs/OSS-Azure-Cql.png)
 
+## Deployment Errors
+
+It is possible for deployments to fail. One reason might be that your Azure subscription doesn't have enough quota to allocate the resources needed for your cluster. In this case you will see an error like below.
+
+![](./imgs/OSS-quota-failure.png)
+
+From the Azure portal, go to the resource groups and delete the resource group of the failed deployment. Ask your Azure admin to increase your quota and run the delployment again.
+
+Another reason for failure is because of deployment timeouts. In thiscase you will see an error like below.
+
+![](./imgs/OSS-ext-timeout.png)
+
+From the Azure portal, go to the resource groups and delete the resource group of the failed deployment and run the delployment again.
+
+
+
 ## Next Steps
 
 If you want to learn more about DataStax Enterprise, the online training courses at https://academy.datastax.com/ are a great place to start.
